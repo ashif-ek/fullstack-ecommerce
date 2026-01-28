@@ -1,74 +1,72 @@
-📦 Full-Stack eCommerce Platform
+# 📦 Full-Stack eCommerce Platform
 
-A full-stack eCommerce application built with Django REST Framework and React, styled using Tailwind CSS, and secured with JWT authentication.
+A full-stack eCommerce application built with **Django REST Framework** and **React**, styled using **Tailwind CSS**, and secured with **JWT authentication**.
 Designed with scalability, clean architecture, and real-world best practices in mind.
 
-🚀 Tech Stack
-Backend
+---
 
-Python
+## 🚀 Tech Stack
 
-Django
+### Backend
+- **Python**
+- **Django**
+- **Django REST Framework**
+- **JWT Authentication** (SimpleJWT)
+- **Custom User Model** (Email-based login)
 
-Django REST Framework
+### Frontend
+- **React**
+- **Tailwind CSS**
+- **REST API Integration**
+- **JWT Token Handling**
 
-JWT Authentication (SimpleJWT)
+### Tools & Practices
+- **Git & GitHub**
+- **Environment-based settings**
+- **Modular & scalable project structure**
+- **Production-ready authentication flow**
 
-Custom User Model (Email-based login)
+---
 
-Frontend
+## 🔐 Authentication & Security
 
-React
+- ✅ **Email-based authentication** (no username)
+- ✅ **JWT Access & Refresh tokens**
+- ✅ **Token rotation & blacklist support**
+- ✅ **Secure password hashing**
+- ✅ **Protected API endpoints**
 
-Tailwind CSS
+> **Note:** JWT is used for stateless authentication, making the system scalable and frontend-agnostic (web & mobile ready).
 
-REST API Integration
+---
 
-JWT Token Handling
+## 🧠 Architecture Overview
 
-Tools & Practices
+```mermaid
+graph TD
+    Client[Frontend (React)]
+    API[REST APIs + JWT]
+    Backend[Backend (Django REST Framework)]
+    Auth[Authentication & Authorization]
+    Logic[Business Logic]
+    DB[(Database)]
 
-Git & GitHub
+    Client -->|Requests| API
+    API --> Backend
+    Backend --> Auth
+    Backend --> Logic
+    Logic --> DB
+```
 
-Environment-based settings
+- **Stateless backend**
+- **Clean separation of concerns**
+- **Ready for horizontal scaling**
 
-Modular & scalable project structure
+---
 
-Production-ready authentication flow
+## 📂 Project Structure (High-Level)
 
-🔐 Authentication & Security
-
-Email-based authentication (no username)
-
-JWT Access & Refresh tokens
-
-Token rotation & blacklist support
-
-Secure password hashing
-
-Protected API endpoints
-
-Note: JWT is used for stateless authentication, making the system scalable and frontend-agnostic (web & mobile ready).
-
-🧠 Architecture Overview
-Frontend (React)
-   |
-   |  REST APIs + JWT
-   |
-Backend (Django REST Framework)
-   |
-   ├── Authentication & Authorization
-   ├── Business Logic
-   └── Database
-
-
-Stateless backend
-
-Clean separation of concerns
-
-Ready for horizontal scaling
-
-📂 Project Structure (High-Level)
+```bash
 backend/
   ├── accounts/        # Custom user & auth logic
   ├── core/            # Core settings & utilities
@@ -81,62 +79,73 @@ frontend/
   │   ├── pages/
   │   ├── services/    # API calls
   │   └── auth/
+```
 
-⚙️ Setup Instructions (Local)
-Backend
+---
+
+## ⚙️ Setup Instructions (Local)
+
+### Backend
+
+```bash
 git clone https://github.com/ashif-ek/fullstack-ecommerce.git
 cd backend
 python -m venv venv
+# On Windows
+venv\Scripts\activate
+# On macOS/Linux
 source venv/bin/activate
 pip install -r requirements.txt
 python manage.py migrate
 python manage.py runserver
+```
 
-Frontend
+### Frontend
+
+```bash
 cd frontend
 npm install
 npm run dev
+```
 
-🎯 Features (Current & Planned)
-Implemented
+---
 
-User registration & login
+## 🎯 Features (Current & Planned)
 
-JWT authentication
+### Implemented
+- [x] User registration & login
+- [x] JWT authentication
+- [x] Protected routes
+- [x] Custom user model
 
-Protected routes
+### Planned
+- [ ] Product catalog
+- [ ] Cart & checkout
+- [ ] Order management
+- [ ] Role-based access (Admin / User)
+- [ ] Payment gateway integration
 
-Custom user model
+---
 
-Planned
+## 🧩 Design Philosophy
 
-Product catalog
-
-Cart & checkout
-
-Order management
-
-Role-based access (Admin / User)
-
-Payment gateway integration
-
-🧩 Design Philosophy
-
-Security first
-
-Simple before complex
-
-Scalable by default
-
-Production mindset, not tutorial code
+1. **Security first**
+2. **Simple before complex**
+3. **Scalable by default**
+4. **Production mindset, not tutorial code**
 
 This project is built to simulate real industry patterns, not just to “make it work”.
 
-📜 License
+---
 
-This project is licensed under the MIT License.
+## 📜 License
 
-🙌 Author
+This project is licensed under the **MIT License**.
 
-Ashif
+---
+
+## 🙌 Author
+
+**Ashif ek**
+
 Aiming to build production-grade systems with clean architecture and strong fundamentals.
