@@ -49,9 +49,9 @@ if (password !== confirmPassword) {
 
     await Api.post("/users", newUser);
 
-    toast.success("Registered successfully");
-    toast.info("please login with username")
-    navigate("/login", {replace:true});
+  // After successful registration:
+  toast.success("Account created! Please login.");
+  navigate("/login", { replace: true });
     
   };
 

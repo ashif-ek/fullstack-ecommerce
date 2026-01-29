@@ -1,4 +1,5 @@
 
+
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { useNavigate, Link } from "react-router-dom";
@@ -6,70 +7,48 @@ import Api from "./api";
 import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
-  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
 const handleSubmit = async (e) => {
   e.preventDefault();
+  setIsLoading(true);
 
   try {
-    const res = await Api.get("/users", {
-      params: { name, password },
+    const res = await Api.post("/api/auth/login/", {
+      username: email,
+      password: password,
     });
 
-    const user = res.data[0];
+    const { access, refresh, user } = res.data;
 
-    if (!user) {
-      toast.warn("Invalid username or password");
-      return;
-    }
+    // Store tokens and user info
+    login(user, access, refresh);
 
-    if (user.isBlocked) {
-      toast.error("ur acoount are blocked, contact us");
-      return;
-    }
-
-    const role = user.role === "admin" ? "admin" : "user";
-
-    login({
-      id: user.id,
-      username: user.name,
-      useremail: user.email,
-      role,
-    });
-
-    if (role === "admin") {
-      navigate("/admin",{replace:true});
+    // Navigate based on user role
+    if (user.is_staff) {
+      navigate("/admin", { replace: true });
     } else {
-      navigate("/",{replace:true});
+      navigate("/", { replace: true });
     }
 
-    toast.success(`Logged in as ${role}`);
+    toast.success(`Logged in as ${user.username}`);
   } catch (err) {
     console.error("Login error:", err);
-    toast.error("Something went wrong. Please try later.");
+    toast.error(
+      err.response?.data?.detail || "Invalid email or password. Please try again."
+    );
+  } finally {
+    setIsLoading(false);
   }
 };
-
-
 
   return (
     <div className="flex items-center justify-center min-h-screen p-6 bg-black text-white">
       <div className="relative w-full max-w-md">
-
-        
-        {/* Background img
-        <div
-          className="absolute inset-0 z-0 bg-cover bg-center opacity-20"
-          style={{
-            backgroundImage:
-              "url('https://cdn.mos.cms.futurecdn.net/VzUqgr8pfbNcfXrpzeVBPE.jpg')",
-          }}
-        ></div> */}
-
-        {/* Login form */}
         <form
           onSubmit={handleSubmit}
           className="relative z-10 p-8 space-y-8 bg-black/70 border border-white/10 rounded-lg shadow-xl backdrop-blur-sm"
@@ -85,10 +64,10 @@ const handleSubmit = async (e) => {
           </div>
 
           <input
-            type="text"
-            placeholder="Username"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
             className="w-full px-4 py-3 text-white bg-white/5 border border-white/10 rounded-md placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-white/50"
           />
@@ -104,11 +83,11 @@ const handleSubmit = async (e) => {
 
           <button
             type="submit"
-            className="w-full py-3 text-sm font-semibold tracking-wide text-black uppercase transition duration-300 bg-white hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-white"
+            disabled={isLoading}
+            className="w-full py-3 text-sm font-semibold tracking-wide text-black uppercase transition duration-300 bg-white hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-white disabled:opacity-50"
           >
-            Login
+            {isLoading ? "Logging in..." : "Login"}
           </button>
-
 
           <div className="pt-4 text-center border-t border-white/10 space-y-2">
             <Link
@@ -129,13 +108,6 @@ const handleSubmit = async (e) => {
     </div>
   );
 }
-
-
-
-
-
-
-
 
 
 
