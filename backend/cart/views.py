@@ -5,6 +5,7 @@ from rest_framework import status
 from .models import CartItem, Cart
 from products.models import Product
 from .serializers import CartSerializer
+from .serializers import CartItemUpdateSerializer
 
 
 class CartView(APIView):
@@ -71,3 +72,16 @@ class AddToCartView(APIView):
             {"message": "Product added to cart"},
             status=status.HTTP_200_OK
         )
+
+
+class UpdateCartItemView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request):
+        serializer = CartItemUpdateSerializer(
+            data=request.data,
+            context={"user": request.user}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"detail": "Cart updated"}, status=status.HTTP_200_OK)

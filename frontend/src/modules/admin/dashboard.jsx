@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import {LineChart,Line,XAxis,YAxis,Tooltip,BarChart,Bar,PieChart,Pie,Cell,ResponsiveContainer,AreaChart,Area,} from "recharts";
-import Api from "../../auth/api";
+import Api from "../../services/api";
 import {  FiBox,  FiUsers,  FiShoppingBag,  FiSearch,  FiBell,  FiUser,  FiTrendingUp,  FiDollarSign,  FiCalendar,} from "react-icons/fi";
 import dayjs from "dayjs"; 
 

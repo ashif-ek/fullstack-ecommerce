@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import Api from "../../auth/api";
+import Api from "../../services/api";
 import { FiUser, FiMail, FiCalendar, FiSearch, FiFilter, FiEye, FiPlus, FiLoader } from "react-icons/fi";
 import { toast } from "react-toastify";
 

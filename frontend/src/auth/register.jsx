@@ -1,140 +1,103 @@
-
 import { toast } from "react-toastify";
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import Api from "./api";
+import Api from "../services/api";
 
 export default function Register() {
-  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-if (!name.trim() || !email.trim() || !password.trim()) {
-  toast.warn("fill all field");
-  return;
-}
-
-// const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
-// if (!passwordRegex.test(password)) {
-//   toast.warn("Password must be 8+ chars, include uppercase & number");
-//   return;
-// }
-
-if (password !== confirmPassword) {
-  toast.warn("Passwords do not match");
-  return;
-}
-    const res = await Api.get("/users", { params: { email } });
-    if (res.data.length > 0) {
-      toast.warn("Email already registered");
+    if (!username || !email || !password) {
+      toast.warn("All fields are required");
       return;
     }
 
-    const newUser = {
-      name,
-      email,
-      password,
-      role: "user",
-      isBlocked: false,
-      cart: [],
-      wishlist: [],
-      orders: [],
-      createdAt: new Date().toISOString(),
-    };
+    if (password !== confirmPassword) {
+      toast.warn("Passwords do not match");
+      return;
+    }
 
-    await Api.post("/users", newUser);
+    try {
+      await Api.post("/auth/register/", {
+        username,
+        email,
+        password,
+      });
 
-  // After successful registration:
-  toast.success("Account created! Please login.");
-  navigate("/login", { replace: true });
-    
+      toast.success("Account created. Please login.");
+      navigate("/login", { replace: true });
+    } catch (err) {
+      console.error("Register error:", err);
+      toast.error(
+        err.response?.data?.detail ||
+          "Registration failed"
+      );
+    }
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen p-6 bg-black text-white">
-      <div className="relative w-full max-w-md">
-        {/* <div
-          className="absolute inset-0 z-0 bg-cover bg-center opacity-20"
-          style={{
-            backgroundImage:
-              "url('https://cdn.mos.cms.futurecdn.net/VzUqgr8pfbNcfXrpzeVBPE.jpg')",
-          }}
-        ></div> */}
-
+      <div className="w-full max-w-md">
         <form
           onSubmit={handleSubmit}
-          className="relative z-10 p-8 space-y-8 bg-black/70 border border-white/10 rounded-lg shadow-xl backdrop-blur-sm"
+          className="p-8 space-y-6 bg-black/70 border border-white/10 rounded-lg"
         >
-          <div className="text-center">
-            <h1 className="text-3xl tracking-wider font-light font-playfair">
-              Create Account
-            </h1>
-            <div className="w-20 h-px mx-auto mt-4 bg-white/30"></div>
-          </div>
+          <h1 className="text-3xl text-center">Create Account</h1>
 
-          <div className="space-y-4">
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Full Name"
-              required
-              className="w-full px-4 py-3 text-white bg-white/5 border border-white/10 rounded-md placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-white/50"
-            />
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email Address"
-              required
-              className="w-full px-4 py-3 text-white bg-white/5 border border-white/10 rounded-md placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-white/50"
-            />
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
-              required
-              className="w-full px-4 py-3 text-white bg-white/5 border border-white/10 rounded-md placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-white/50"
-            />
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirm Password"
-              required
-              className="w-full px-4 py-3 text-white bg-white/5 border border-white/10 rounded-md placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-white/50"
-            />
-          </div>
+          <input
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded"
+          />
+
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded"
+          />
+
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded"
+          />
+
+          <input
+            type="password"
+            placeholder="Confirm Password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded"
+          />
 
           <button
             type="submit"
-            className="w-full py-3 text-sm font-semibold tracking-wide text-black uppercase transition duration-300 bg-white hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-white"
+            className="w-full py-3 bg-white text-black font-semibold"
           >
             Register
           </button>
 
-          <div className="pt-4 text-center border-t border-white/10">
-            <p className="text-sm text-gray-400">
-              Already have an account?{" "}
-              <Link
-                to="/login"
-                className="font-medium text-white transition hover:underline"
-              >
-                Sign In
-              </Link>
-            </p>
-            <br />
-            <Link
-              to="/"
-              className="block text-sm text-gray-500 hover:text-white transition"
-            >
-              Continue Without Login
+          <div className="text-center text-sm text-gray-400">
+            Already have an account?{" "}
+            <Link to="/login" className="hover:text-white">
+              Sign In
             </Link>
           </div>
         </form>
@@ -142,137 +105,3 @@ if (password !== confirmPassword) {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// import { useState } from "react";
-// import { useNavigate } from "react-router-dom";
-// import Api from "./api";
-
-// export default function Register() {
-//   const [name, setName] = useState("");
-//   const [email, setEmail] = useState("");
-//   const [password, setPassword] = useState("");
-//   const [confirmPassword, setConfirmPassword] = useState("");
-//   const navigate = useNavigate();
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-
-//     if (password !== confirmPassword) {
-//       alert("Password not match");
-//       return;
-//     }
-
-//     const res = await Api.get("/users", { params: { email } });
-//     if (res.data.length > 0) {
-//       alert("Email already registered");
-//       return;
-//     }
-
-//     const newUser = {
-//       name,
-//       email,
-//       password,
-//       cart: [],
-//       wishlist: [],
-//       orders: [],
-//     };
-
-//     await Api.post("/users", newUser);
-
-
-//     alert("registerd sucessfully, now plz loggin");
-//     navigate("/login");
-//   };
-
-//   return (
-//     <div >
-//       <form
-//         onSubmit={handleSubmit}
-//       >
-//         <h2 className="text-xl font-bold text-center">Register</h2>
-
-//         <input
-//           type="text"
-//           value={name}
-//           onChange={(e) => setName(e.target.value)}
-//           placeholder="Name"
-//           required
-//         />
-
-//         <input
-//           type="email"
-//           value={email}
-//           onChange={(e) => setEmail(e.target.value)}
-//           placeholder="Email"
-//           required
-//         />
-
-//         <input
-//           type="password"
-//           value={password}
-//           onChange={(e) => setPassword(e.target.value)}
-//           placeholder="Password"
-//           required
-//         />
-
-//         <input
-//           type="password"
-//           value={confirmPassword}
-//           onChange={(e) => setConfirmPassword(e.target.value)}
-//           placeholder="Confirm Password"
-//           required
-//         />
-
-//         <button
-//           type="submit"
-//         >
-//           Register
-//         </button>
-//       </form>
-//     </div>
-//   );
-// }

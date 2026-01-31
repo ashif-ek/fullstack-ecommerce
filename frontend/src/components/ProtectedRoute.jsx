@@ -1,21 +1,19 @@
-import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function ProtectedRoute() {
   const { user, loading } = useAuth();
-  const location = useLocation();
 
+  // 1️ Wait for auth to resolve
   if (loading) {
-    return <div style={{ textAlign: "center", marginTop: "2rem" }}>
-      Loading...
-    </div>;
+    return null; // or spinner
   }
 
+  // 2️ Only redirect AFTER loading
   if (!user) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/login" replace />;
   }
-if (user.role !== "user"){
-  return <Navigate to="/admin" replace />
-}
+
+  // 3️ Allow access
   return <Outlet />;
 }

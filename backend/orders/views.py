@@ -1,48 +1,38 @@
-from rest_framework import status, permissions
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
+from rest_framework import status
+from django.core.exceptions import ValidationError
 
-from .models import Order
-from .serializers import OrderSerializer
 from .services import create_order_from_cart
 
+
 class OrderCreateView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        order = create_order_from_cart(request.user)
-        serializer = OrderSerializer(order)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        shipping_address = request.data.get("shipping_address")
 
-class OrderListView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get(self, request):
-        orders = Order.objects.filter(user=request.user).order_by("-created_at")
-        serializer = OrderSerializer(orders, many=True)
-        return Response(serializer.data)
-class OrderDetailView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get(self, request, pk):
-        order = get_object_or_404(Order, pk=pk, user=request.user)
-        serializer = OrderSerializer(order)
-        return Response(serializer.data)
-class OrderCancelView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def patch(self, request, pk):
-        order = get_object_or_404(Order, pk=pk, user=request.user)
-
-        if order.status != Order.STATUS_CREATED:
+        if not shipping_address:
             return Response(
-                {"detail": "Order cannot be cancelled"},
+                {"detail": "Shipping address is required"},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        order.status = Order.STATUS_CANCELLED
-        order.save()
+        try:
+            order = create_order_from_cart(request.user)
 
-        serializer = OrderSerializer(order)
-        return Response(serializer.data)
+            # update shipping AFTER creation
+            order.shipping_address = shipping_address
+            order.save(update_fields=["shipping_address"])
+
+            return Response(
+                {"id": order.id},
+                status=status.HTTP_201_CREATED
+            )
+
+        except ValidationError as e:
+            return Response(
+                {"detail": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )

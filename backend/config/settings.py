@@ -111,6 +111,14 @@ REST_FRAMEWORK = {
     ],
 }
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": False,
+
+    "AUTH_HEADER_TYPES": ("Bearer",),
 }
+
+
+RAZORPAY_KEY_ID = "rzp_test_SA0sZGtrvdbFdf"
+RAZORPAY_KEY_SECRET = "kHm9GI7eRJMm4DjX9CiSlMV6"

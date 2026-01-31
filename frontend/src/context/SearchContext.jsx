@@ -1,6 +1,6 @@
 // context/SearchContext.jsx
 import { createContext, useContext, useState, useEffect } from "react";
-import Api from "../auth/api";
+import Api from "../services/api";
 
 const SearchContext = createContext();
 

@@ -52,7 +52,7 @@ export default function Wishlist() {
                   <div className="flex items-center space-x-4">
                     <button
                       onClick={() => {
-                        addToCart(item);
+                        addToCart(item.id, 1);
                         toast.info(`${item.name} added to cart!`);
                       }}
                       className="flex-1 text-xs tracking-widest uppercase border border-white/30 px-4 py-2 hover:bg-white hover:text-black transition-colors duration-300"

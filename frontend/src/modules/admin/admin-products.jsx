@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import Api from "../../auth/api"; // Assuming your API setup is correct
+import Api from "../../services/api"; // Assuming your API setup is correct
 import { toast } from "react-toastify";
 import { 
   FiEdit, 
