@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 import { useCart } from "../../../context/CartContext";
@@ -42,6 +42,7 @@ export default function Checkout() {
   const { user } = useAuth();
   const { cart, clearCart } = useCart();
   const { createOrder, isProcessing } = useOrders();
+  const navigate = useNavigate();
 
   const total = cart.reduce(
     (sum, item) =>
@@ -88,16 +89,28 @@ export default function Checkout() {
     }
 
     try {
-      /* 1️⃣ CREATE ORDER */
+      /* 1️ CREATE ORDER */
       const order = await createOrder(shippingDetails, total);
 
-      /* 2️⃣ CREATE RAZORPAY ORDER */
+      /* 2️ CREATE RAZORPAY ORDER */
       const { data } = await Api.post(
         `/payments/razorpay/${order.id}/`
       );
 
-      /* 3️⃣ OPEN RAZORPAY */
-      openRazorpay(data, clearCart);
+      /* 3️ OPEN RAZORPAY */
+      const handleSuccess = async () => {
+        try {
+           await Api.post('/payments/verify/', { order_id: order.id });
+           clearCart();
+           toast.success("Payment successful");
+           navigate("/profile");
+        } catch (err) {
+           console.error(err);
+           toast.error("Payment verification failed");
+        }
+      };
+
+      openRazorpay(data, handleSuccess);
     } catch (err) {
       console.error("Checkout error:", err);
       toast.error("Payment initialization failed");
@@ -173,7 +186,7 @@ export default function Checkout() {
    RAZORPAY SAFE OPEN
 ========================= */
 
-function openRazorpay(data, clearCart) {
+function openRazorpay(data, onSuccess) {
   if (!window.Razorpay) {
     toast.error("Payment system not loaded");
     return;
@@ -187,8 +200,7 @@ function openRazorpay(data, clearCart) {
     name: "Noirél",
     description: "Luxury Perfumes",
     handler: () => {
-      toast.success("Payment successful");
-      clearCart();
+      onSuccess();
     },
     modal: {
       ondismiss: () => {

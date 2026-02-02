@@ -6,7 +6,10 @@ from django.contrib.auth import authenticate
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .serializers import RegisterSerializer
+from django.shortcuts import get_object_or_404
+from .models import User
+from .serializers import RegisterSerializer, UserSerializer
+
 
 class LoginAPIView(APIView):
     permission_classes = [AllowAny]
@@ -34,8 +37,8 @@ class LoginAPIView(APIView):
             key="refresh_token",
             value=str(refresh),
             httponly=True,
-            secure=False,          # True in production (HTTPS)
-            samesite="Lax",        # "None" if cross-domain HTTPS
+            secure=False,  # True in production (HTTPS)
+            samesite="Lax",  # "None" if cross-domain HTTPS
             max_age=7 * 24 * 60 * 60,
         )
 
@@ -64,6 +67,7 @@ class CookieRefreshView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
+
 class LogoutAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -74,6 +78,7 @@ class LogoutAPIView(APIView):
         )
         response.delete_cookie("refresh_token")
         return response
+
 
 class MeAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -87,6 +92,7 @@ class MeAPIView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
 
 class RegisterAPIView(APIView):
     permission_classes = [AllowAny]
@@ -108,3 +114,17 @@ class RegisterAPIView(APIView):
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+class UserDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        # Ensure users can only view their own profile
+        if request.user.id != pk and not request.user.is_staff:
+            return Response(
+                {"detail": "Not authorized"}, status=status.HTTP_403_FORBIDDEN
+            )
+
+        user = get_object_or_404(User, pk=pk)
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
