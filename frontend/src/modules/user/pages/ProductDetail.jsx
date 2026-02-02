@@ -53,7 +53,7 @@ export default function ProductDetail() {
             {/* Image */}
             <div className="flex-1">
               <img
-                src={product.images?.[0]}
+                src={product.image}
                 alt={product.name}
                 className="w-full h-96 object-cover rounded-lg"
               />

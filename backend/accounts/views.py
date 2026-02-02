@@ -119,12 +119,19 @@ class UserDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk):
-        # Ensure users can only view their own profile
-        if request.user.id != pk and not request.user.is_staff:
-            return Response(
-                {"detail": "Not authorized"}, status=status.HTTP_403_FORBIDDEN
-            )
+        print(f"DEBUG: Entering UserDetailView with pk={pk}, user={request.user}")
+        try:
+            # Ensure users can only view their own profile
+            if request.user.id != pk and not request.user.is_staff:
+                return Response(
+                    {"detail": "Not authorized"}, status=status.HTTP_403_FORBIDDEN
+                )
 
-        user = get_object_or_404(User, pk=pk)
-        serializer = UserSerializer(user)
-        return Response(serializer.data)
+            user = get_object_or_404(User, pk=pk)
+            serializer = UserSerializer(user)
+            return Response(serializer.data)
+        except Exception as e:
+            import traceback
+
+            traceback.print_exc()
+            return Response({"error": str(e)}, status=500)
