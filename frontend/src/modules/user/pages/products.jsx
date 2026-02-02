@@ -85,8 +85,11 @@ export default function Products() {
     if (!hasMore) return;
     setLoading(true);
     try {
-      const res = await Api.get("/products/");
-      const activeProducts = res.data.filter(p => p.isActive !== false);
+
+      const res = await Api.get(`/products/?page=${page}`);
+      // Handle potential pagination structure or flat list
+      const results = res.data.results ? res.data.results : res.data;
+      const activeProducts = results.filter(p => p.isActive !== false);
 
       setProducts(prevProducts => {
         const combinedProducts = [...prevProducts, ...activeProducts];
@@ -96,7 +99,15 @@ export default function Products() {
         return uniqueProducts;
       });
 
-      setHasMore(res.data.length === PRODUCTS_PER_PAGE);
+      // Update hasMore based on backend 'next' link or current chunk size
+      if (res.data.next) {
+         setHasMore(true);
+      } else if (res.data.results) {
+         setHasMore(false);
+      } else {
+         // Fallback for flat list
+         setHasMore(results.length === PRODUCTS_PER_PAGE);
+      }
     } catch (err) {
       console.error("error", err);
       toast.error("Failed to fetch products.");
