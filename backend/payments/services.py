@@ -5,11 +5,17 @@ client = razorpay.Client(
     auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
 )
 
-
 def create_razorpay_order(order):
+    if not order.total:
+        raise ValueError("Order total is missing")
+
+    amount = int(float(order.total) * 100)
+
     razorpay_order = client.order.create({
-        "amount": int(order.total_amount * 100),  # INR → paise
+        "amount": amount,
         "currency": "INR",
         "payment_capture": 1
     })
+
     return razorpay_order
+

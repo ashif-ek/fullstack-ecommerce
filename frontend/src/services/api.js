@@ -35,7 +35,6 @@ export const clearAccessToken = () => {
 
 /* ===============================
    REQUEST INTERCEPTOR
-   - Attach access token if present
 ================================ */
 
 Api.interceptors.request.use(
@@ -49,8 +48,22 @@ Api.interceptors.request.use(
 );
 
 /* ===============================
+   REFRESH CONTROL (CRITICAL)
+================================ */
+
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) prom.reject(error);
+    else prom.resolve(token);
+  });
+  failedQueue = [];
+};
+
+/* ===============================
    RESPONSE INTERCEPTOR
-   - SimpleJWT refresh handling
 ================================ */
 
 Api.interceptors.response.use(
@@ -63,24 +76,46 @@ Api.interceptors.response.use(
       error.response?.status === 401 &&
       !originalRequest._retry
     ) {
+      // Prevent infinite retry
       originalRequest._retry = true;
 
+      // If refresh already running, queue the request
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then((token) => {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return Api(originalRequest);
+        });
+      }
+
+      isRefreshing = true;
+
       try {
-        // Refresh access token
         const res = await Api.post("/auth/refresh/");
         const newToken = res.data?.access;
 
         if (!newToken) {
-          throw new Error("No access token returned");
+          throw new Error("Refresh returned no access token");
         }
 
         setAccessToken(newToken);
-        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        processQueue(null, newToken);
 
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return Api(originalRequest);
+
       } catch (refreshError) {
+        processQueue(refreshError, null);
+
+        // HARD LOGOUT (correct behavior)
         clearAccessToken();
+        window.location.href = "/login";
+
         return Promise.reject(refreshError);
+
+      } finally {
+        isRefreshing = false;
       }
     }
 

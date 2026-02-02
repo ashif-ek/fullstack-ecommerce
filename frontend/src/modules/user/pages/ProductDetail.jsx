@@ -15,7 +15,7 @@ export default function ProductDetail() {
   const { addToWishlist } = useWishlist();
 
   useEffect(() => {
-    Api.get(`/products/${id}`)
+    Api.get(`/products/${id}/`)
       .then((res) => setProduct(res.data))
       .catch((err) => console.error("API error:", err));
   }, [id]);

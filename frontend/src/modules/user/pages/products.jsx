@@ -51,7 +51,7 @@ const ProductCard = React.memo(({ product, onOpenModal, innerRef }) => {
     >
       <div className="overflow-hidden">
         <img
-          src={product.images}
+          src={product.image}
           alt={product.name}
           className="w-full h-80 object-cover transform transition-transform duration-700 group-hover:scale-110"
           loading="lazy"
@@ -207,12 +207,12 @@ export default function Products() {
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
             <div className="relative max-w-4xl w-full max-h-[90vh] overflow-auto bg-gradient-to-br from-gray-900 to-black border border-white/10 rounded-lg">
               <button onClick={closeModal} className="absolute top-4 right-4 z-10 text-white/70 hover:text-white transition-colors">
-                 {/* ✅ THIS IS THE CORRECTED LINE */}
+                 {/*  THIS IS THE CORRECTED LINE */}
                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M6 18L18 6M6 6l12 12"></path></svg>
               </button>
               <div className="grid md:grid-cols-2 gap-8">
                 <div className="h-96 md:h-full">
-                  <img src={selectedProduct.images} alt={selectedProduct.name} className="w-full h-full object-cover" />
+                  <img src={selectedProduct.image} alt={selectedProduct.name} className="w-full h-full object-cover" />
                 </div>
                 <div className="p-8">
                   <h2 className="text-3xl font-light mb-2">{selectedProduct.name}</h2>

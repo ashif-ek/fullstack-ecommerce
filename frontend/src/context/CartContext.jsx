@@ -146,7 +146,6 @@ export function CartProvider({ children }) {
   ========================== */
   const clearCart = useCallback(async () => {
     try {
-      await Api.post("/cart/clear/");
       dispatch({ type: "CLEAR_CART" });
     } catch (err) {
       console.error("Clear cart error:", err);
@@ -158,7 +157,7 @@ export function CartProvider({ children }) {
     () => ({
       cart: state.cart,
       isLoading: state.isLoading,
-      addToCart,          // ✅ REQUIRED FOR WISHLIST
+      addToCart,          //  REQUIRED FOR WISHLIST
       updateQuantity,
       removeFromCart,
       clearCart,

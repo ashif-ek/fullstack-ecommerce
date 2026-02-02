@@ -152,7 +152,7 @@ export default function AdminProducts() {
   const handleDelete = async (id, name) => {
     if (!window.confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) return;
     try {
-      await Api.delete(`/products/${id}`);
+      await Api.delete(`/products/${id}/`);
       toast.success(`Product "${name}" deleted.`);
       fetchProducts(); // Refresh data
     } catch (error) {

@@ -4,14 +4,17 @@ from django.db import models
 
 class Order(models.Model):
     STATUS_CREATED = "CREATED"
+    STATUS_PAYMENT_INITIATED = "PAYMENT_INITIATED"
     STATUS_PAID = "PAID"
     STATUS_CANCELLED = "CANCELLED"
 
     STATUS_CHOICES = [
         (STATUS_CREATED, "Created"),
+        (STATUS_PAYMENT_INITIATED, "Payment Initiated"),
         (STATUS_PAID, "Paid"),
         (STATUS_CANCELLED, "Cancelled"),
     ]
+
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
