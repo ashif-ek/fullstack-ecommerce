@@ -31,7 +31,7 @@ const handleClearOrders = async () => {
 
   try {
     // Fetch current user
-    const response = await Api.get(`/users/${user.id}`);
+    const response = await Api.get(`/users/${user.id}/`);
     const currentUserData = response.data;
 
     // Update user with empty orders array
@@ -40,7 +40,7 @@ const handleClearOrders = async () => {
       orders: [],
     };
 
-    await Api.put(`/users/${user.id}`, updatedUserData);
+    await Api.put(`/users/${user.id}/`, updatedUserData);
 
     setOrders([]); // Clear orders locally
   } catch (err) {
@@ -50,7 +50,7 @@ const handleClearOrders = async () => {
 
   useEffect(() => {
     if (user?.id) {
-      Api.get(`/users/${user.id}`) 
+      Api.get(`/users/${user.id}/`) 
         .then((res) => {
           setOrders(res.data.orders || []); 
         })
@@ -168,49 +168,53 @@ const handleClearOrders = async () => {
                         <div>
                           <p className="text-sm text-gray-400">ORDER PLACED</p>
                           <p className="text-white">
-                            {order.date ? new Date(order.date).toLocaleDateString("en-US", {
+                            {order.created_at ? new Date(order.created_at).toLocaleDateString("en-US", {
                               year: 'numeric', month: 'long', day: 'numeric'
                             }) : 'Date not available'}
                           </p>
                         </div>
                         <div className="mt-2 md:mt-0 md:text-right">
                           <p className="text-sm text-gray-400">TOTAL</p>
-                          {/* ✅ FIX: Added default 0 for total */}
-                          <p className="text-xl font-serif text-white">₹{(order.total || 0).toFixed(2)}</p>
+                          {/* Added default 0 for total */}
+                          <p className="text-xl font-serif text-white">₹{parseFloat(order.total_amount || 0).toFixed(2)}</p>
                         </div>
                       </div>
                       
                       {/* Order Items */}
                       <div className="p-4 space-y-4">
-                        {/* ✅ FIX: Check if order.items exists before mapping */}
+                        {/* Check if order.items exists before mapping */}
                         {order.items && order.items.map((item) => (
                           <div key={item.id} className="flex items-center space-x-4">
-                            <img
-                              // ✅ FIX: Use optional chaining in case images array is missing
-                              src={item.images?.[0]} 
-                              alt={item.name}
-                              className="w-16 h-16 object-cover rounded-md"
-                            />
+                           <img
+  src={
+    item.product_image
+      ? `http://127.0.0.1:8000${item.product_image}`
+      : "https://via.placeholder.com/64?text=No+Image"
+  }
+  alt={item.product_name || item.name}
+  className="w-16 h-16 object-cover rounded-md"
+/>
+
                             <div className="flex-grow">
-                              <p className="font-semibold text-white">{item.name}</p>
+                              <p className="font-semibold text-white">{item.product_name || item.name}</p>
                               <p className="text-sm text-gray-400">
-                                {/* ✅ FIX: Added default 1 for quantity and 0 for price */}
-                                Qty: {item.quantity || 1} · ₹{(item.price || 0).toFixed(2)} each
+                                {/* Added default 1 for quantity and 0 for price */}
+                                Qty: {item.quantity || 1} · ₹{parseFloat(item.unit_price || 0).toFixed(2)} each
                               </p>
                             </div>
                             <p className="font-serif text-lg">
-                              {/* ✅ FIX: Used defaults for subtotal calculation */}
-                              ₹{((item.price || 0) * (item.quantity || 1)).toFixed(2)}
+                              {/* Used defaults for subtotal calculation */}
+                              ₹{(parseFloat(item.unit_price || 0) * (item.quantity || 1)).toFixed(2)}
                             </p>
                           </div>
                         ))}
                       </div>
 
                       {/* Shipping Details */}
-                      {/* ✅ FIX: Check if order.shipping exists */}
+                      {/* Check if order.shipping exists */}
                       {order.shipping && (
                         <div className="p-4 border-t border-white/10 text-sm text-gray-300 space-y-1">
-                          {/* ✅ FIX: Use optional chaining for every property */}
+                          {/* Use optional chaining for every property */}
                           <p><span className="font-semibold">Ship to:</span> {order.shipping?.fullName}</p>
                           <p>{order.shipping?.address},
                              {order.shipping?.city},
@@ -239,7 +243,7 @@ const handleClearOrders = async () => {
                     </div>
                     <div>
                         <label className="text-xs text-gray-400 uppercase tracking-wider">Email Address</label>
-                        <input type="email" value={user.useremail} disabled className="w-full bg-transparent border-b border-white/20 p-2 mt-1"/>
+                        <input type="email" value={user.email} disabled className="w-full bg-transparent border-b border-white/20 p-2 mt-1"/>
                     </div>
                     </div>
                     <div className="text-center pt-4">

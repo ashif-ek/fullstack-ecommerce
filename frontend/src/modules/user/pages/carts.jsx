@@ -40,7 +40,7 @@ export default function Cart() {
 
                   <div className="md:col-span-2 flex items-center space-x-4">
                     <img
-                      src={item.images}
+                      src={item.image}
                       alt={item.name}
                       className="w-24 h-24 object-cover rounded"
                     />

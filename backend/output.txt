@@ -1,0 +1,10 @@
+--- STARTING VERIFICATION ---
+User 6 found: ashif@gmail.com
+
+Testing GET /api/users/6/
+DEBUG: Entering UserDetailView with pk=6, user=ashif@gmail.com
+Status Code: 200
+SUCCESS 200 OK
+Data keys: dict_keys(['id', 'username', 'email', 'orders'])
+Sample Order: {'id': 6, 'status': 'CREATED', 'total_amount': '1943.00', 'created_at': '2026-02-02T07:43:49.483496Z', 'items': [{'id': 7, 'product_id': 1, 'product_name': 'axe', 'unit_price': '1943.00', 'quantity': 1, 'line_total': '1943.00', 'product_image': None}]}
+Sample Item: {'id': 7, 'product_id': 1, 'product_name': 'axe', 'unit_price': '1943.00', 'quantity': 1, 'line_total': '1943.00', 'product_image': None}

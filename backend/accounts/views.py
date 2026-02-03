@@ -128,7 +128,7 @@ class UserDetailView(APIView):
                 )
 
             user = get_object_or_404(User, pk=pk)
-            serializer = UserSerializer(user)
+            serializer = UserSerializer(user, context={"request": request})
             return Response(serializer.data)
         except Exception as e:
             import traceback

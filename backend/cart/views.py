@@ -13,10 +13,8 @@ class CartView(APIView):
 
     def get(self, request):
         cart = request.user.cart
-        serializer = CartSerializer(cart)
+        serializer = CartSerializer(cart, context={"request": request})
         return Response(serializer.data)
-
-
 
 
 class AddToCartView(APIView):
@@ -28,8 +26,7 @@ class AddToCartView(APIView):
 
         if not product_id:
             return Response(
-                {"error": "product_id is required"},
-                status=status.HTTP_400_BAD_REQUEST
+                {"error": "product_id is required"}, status=status.HTTP_400_BAD_REQUEST
             )
 
         try:
@@ -37,29 +34,24 @@ class AddToCartView(APIView):
         except ValueError:
             return Response(
                 {"error": "quantity must be an integer"},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         if quantity < 1:
             return Response(
-                {"error": "quantity must be >= 1"},
-                status=status.HTTP_400_BAD_REQUEST
+                {"error": "quantity must be >= 1"}, status=status.HTTP_400_BAD_REQUEST
             )
 
         try:
             product = Product.objects.get(id=product_id)
         except Product.DoesNotExist:
             return Response(
-                {"error": "Product not found"},
-                status=status.HTTP_404_NOT_FOUND
+                {"error": "Product not found"}, status=status.HTTP_404_NOT_FOUND
             )
 
         cart, _ = Cart.objects.get_or_create(user=request.user)
 
-        item, created = CartItem.objects.get_or_create(
-            cart=cart,
-            product=product
-        )
+        item, created = CartItem.objects.get_or_create(cart=cart, product=product)
 
         if not created:
             item.quantity += quantity
@@ -68,10 +60,7 @@ class AddToCartView(APIView):
 
         item.save()
 
-        return Response(
-            {"message": "Product added to cart"},
-            status=status.HTTP_200_OK
-        )
+        return Response({"message": "Product added to cart"}, status=status.HTTP_200_OK)
 
 
 class UpdateCartItemView(APIView):
@@ -79,8 +68,7 @@ class UpdateCartItemView(APIView):
 
     def patch(self, request):
         serializer = CartItemUpdateSerializer(
-            data=request.data,
-            context={"user": request.user}
+            data=request.data, context={"user": request.user}
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()

@@ -3,7 +3,7 @@ import React, { useEffect, useState, memo } from "react";
 import Api from "../../../services/api";
 import { Link } from "react-router-dom";
 
-const TOP_PRODUCTS_LIMIT = 4;
+// const TOP_PRODUCTS_LIMIT = 4; // Managed by backend now or default
 
 /* ===============================
    Skeleton Loaders (UNCHANGED)
@@ -22,7 +22,7 @@ const SkeletonCard = () => (
 
 const TopSellingSkeletonLoader = () => (
   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-    {Array.from({ length: TOP_PRODUCTS_LIMIT }).map((_, i) => (
+    {Array.from({ length: 4 }).map((_, i) => (
       <SkeletonCard key={i} />
     ))}
   </div>
@@ -85,16 +85,10 @@ export default function TopSellingProducts() {
     const fetchTopProducts = async () => {
       setLoading(true);
       try {
-        const res = await Api.get("/products/");
+        const res = await Api.get("/products/top_selling/?limit=4");
+        // The endpoint returns the list of products directly
         const products = Array.isArray(res.data) ? res.data : [];
-
-        // Simple, honest logic:
-        // Pick first N active products
-        const activeProducts = products.filter(
-          (p) => p.isActive !== false
-        );
-
-        setTopProducts(activeProducts.slice(0, TOP_PRODUCTS_LIMIT));
+        setTopProducts(products);
       } catch (err) {
         console.error("Top products error:", err);
         toast.error("Could not load top-selling items.");
