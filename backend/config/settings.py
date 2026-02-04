@@ -7,10 +7,11 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv(
-    "SECRET_KEY", "django-insecure-=#osfo!$!cmyu-qim$w8pq0$!l47_ju15f!gh+ltag2_dsg%)n"
-)
-DEBUG = os.getenv("DEBUG", "True") == "True"
+# SECRET_KEY = os.getenv(
+#     "SECRET_KEY", "django-insecure-=#osfo!$!cmyu-qim$w8pq0$!l47_ju15f!gh+ltag2_dsg%)n"
+# )
+SECRET_KEY = os.environ["SECRET_KEY"]
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
 
 # Application definition
@@ -23,11 +24,13 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "corsheaders",
+    "drf_spectacular",
     "accounts",
     "products",
     "cart",
     "orders",
     "payments",
+    "django_filters",
 ]
 
 MIDDLEWARE = [
@@ -102,8 +105,8 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "accounts.User"
@@ -117,6 +120,11 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 9,
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.SearchFilter",
+    ],
+    "SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
@@ -127,5 +135,12 @@ SIMPLE_JWT = {
 }
 
 
-RAZORPAY_KEY_ID = "rzp_test_SA0sZGtrvdbFdf"
-RAZORPAY_KEY_SECRET = "kHm9GI7eRJMm4DjX9CiSlMV6"
+RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID")
+RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "E-Commerce API",
+    "DESCRIPTION": "API documentation for the E-Commerce platform",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+}

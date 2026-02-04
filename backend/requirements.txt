@@ -6,3 +6,6 @@ python-dotenv==1.0.*
 psycopg2-binary
 razorpay
 Pillow
+drf-spectacular
+django-filter
+

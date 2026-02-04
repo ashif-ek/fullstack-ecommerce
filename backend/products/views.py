@@ -9,6 +9,9 @@ from .serializers import ProductSerializer
 from orders.models import OrderItem
 
 
+# admin
+from .serializers import AdminProductSerializer
+
 class ProductViewSet(ModelViewSet):
     queryset = Product.objects.filter(is_active=True).order_by("id")
     serializer_class = ProductSerializer
@@ -51,3 +54,10 @@ class ProductViewSet(ModelViewSet):
 
         serializer = self.get_serializer(ordered_products, many=True)
         return Response(serializer.data)
+
+
+
+class AdminProductViewSet(ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = AdminProductSerializer
+    permission_classes = [IsAdminUser]

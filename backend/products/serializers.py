@@ -1,4 +1,3 @@
-# products/serializers.py
 from rest_framework import serializers
 from .models import Product
 
@@ -18,3 +17,9 @@ class ProductSerializer(serializers.ModelSerializer):
                 return request.build_absolute_uri(obj.image.url)
             return obj.image.url
         return None
+
+
+class AdminProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = "__all__"

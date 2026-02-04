@@ -46,6 +46,21 @@ const handleClearOrders = async () => {
   }
 };
 
+const handleCancelOrder = async (orderId) => {
+    if (!window.confirm("Are you sure you want to cancel this order?")) return;
+
+    try {
+        await Api.patch(`/orders/${orderId}/cancel/`);
+        // Refresh orders
+        const res = await Api.get(`/users/${user.id}/`);
+        setOrders(res.data.orders || []);
+        alert("Order cancelled successfully.");
+    } catch (err) {
+        console.error("Error cancelling order:", err);
+        alert(err.response?.data?.detail || "Failed to cancel order.");
+    }
+};
+
   useEffect(() => {
     if (user?.id) {
       Api.get(`/users/${user.id}/`) 
@@ -175,6 +190,23 @@ const handleClearOrders = async () => {
                           <p className="text-sm text-gray-400">TOTAL</p>
                           {/* Added default 0 for total */}
                           <p className="text-xl font-serif text-white">₹{parseFloat(order.total_amount || 0).toFixed(2)}</p>
+                          
+                          {/* Cancel Button */}
+                          {order.status !== 'SHIPPED' && order.status !== 'DELIVERED' && order.status !== 'CANCELLED' && (
+                              <button 
+                                  onClick={() => handleCancelOrder(order.id)}
+                                  className="mt-2 text-xs text-red-500 border border-red-500/50 px-3 py-1 hover:bg-red-500/10 transition-colors uppercase tracking-wider"
+                              >
+                                  Cancel Order
+                              </button>
+                          )}
+                          
+                          <p className={`mt-1 text-sm font-semibold ${
+                            order.status === 'CANCELLED' ? 'text-red-500' : 
+                            order.status === 'DELIVERED' ? 'text-green-500' : 'text-blue-400'
+                          }`}>
+                            Status: {order.status}
+                          </p>
                         </div>
                       </div>
                       
@@ -186,7 +218,7 @@ const handleClearOrders = async () => {
                            <img
   src={
     item.product_image
-      ? `http://127.0.0.1:8000${item.product_image}`
+      ? `${import.meta.env.VITE_API_URL.replace('/api', '')}${item.product_image}`
       : "https://via.placeholder.com/64?text=No+Image"
   }
   alt={item.product_name || item.name}
