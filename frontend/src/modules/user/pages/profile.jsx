@@ -201,12 +201,26 @@ const handleCancelOrder = async (orderId) => {
                               </button>
                           )}
                           
+                          {/* Payment ID Details */}
+                          {order.payment_id && (
+                             <p className="mt-2 text-xs text-gray-400">
+                               Ref: <span className="text-gray-300 font-mono">{order.payment_id}</span>
+                             </p>
+                          )}
+
                           <p className={`mt-1 text-sm font-semibold ${
                             order.status === 'CANCELLED' ? 'text-red-500' : 
                             order.status === 'DELIVERED' ? 'text-green-500' : 'text-blue-400'
                           }`}>
                             Status: {order.status}
                           </p>
+                          
+                          {/* Refund Message */}
+                          {order.status === 'CANCELLED' && (
+                              <div className="mt-2 p-2 bg-red-500/10 border border-red-500/20 rounded text-xs text-red-400">
+                                  <p>Order cancelled. Refund is processing (5-7 days).</p>
+                              </div>
+                          )}
                         </div>
                       </div>
                       
@@ -215,15 +229,15 @@ const handleCancelOrder = async (orderId) => {
                         {/* Check if order.items exists before mapping */}
                         {order.items && order.items.map((item) => (
                           <div key={item.id} className="flex items-center space-x-4">
-                           <img
-  src={
-    item.product_image
-      ? `${import.meta.env.VITE_API_URL.replace('/api', '')}${item.product_image}`
-      : "https://via.placeholder.com/64?text=No+Image"
-  }
-  alt={item.product_name || item.name}
-  className="w-16 h-16 object-cover rounded-md"
-/>
+                                    <img
+            src={
+              item.product_image
+                ? `${import.meta.env.VITE_API_URL.replace('/api', '')}${item.product_image}`
+                : "https://via.placeholder.com/64?text=No+Image"
+            }
+            alt={item.product_name || item.name}
+            className="w-16 h-16 object-cover rounded-md"
+          />
 
                             <div className="flex-grow">
                               <p className="font-semibold text-white">{item.product_name || item.name}</p>

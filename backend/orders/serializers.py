@@ -31,6 +31,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
+    payment_id = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
@@ -40,4 +41,10 @@ class OrderSerializer(serializers.ModelSerializer):
             "total_amount",
             "created_at",
             "items",
+            "payment_id",
         ]
+
+    def get_payment_id(self, obj):
+        if hasattr(obj, "payment"):
+            return obj.payment.reference_id
+        return None
