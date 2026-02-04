@@ -14,17 +14,20 @@ from .serializers import (
     CustomTokenObtainPairSerializer,
 )
 
+
 class LoginAPIView(TokenObtainPairView):
     """
     User / Admin login.
     Uses SimpleJWT with custom claims (is_staff, etc).
     """
+
     permission_classes = [AllowAny]
     serializer_class = CustomTokenObtainPairSerializer
 
 
 class RefreshAPIView(TokenRefreshView):
     permission_classes = [AllowAny]
+
 
 class LogoutAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -38,6 +41,8 @@ class LogoutAPIView(APIView):
             {"message": "Logged out successfully"},
             status=status.HTTP_200_OK,
         )
+
+
 class MeAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -51,6 +56,8 @@ class MeAPIView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+
 class RegisterAPIView(APIView):
     permission_classes = [AllowAny]
 
@@ -72,6 +79,7 @@ class RegisterAPIView(APIView):
             status=status.HTTP_201_CREATED,
         )
 
+
 class UserDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -90,3 +98,15 @@ class UserDetailView(APIView):
         serializer = UserSerializer(user, context={"request": request})
         return Response(serializer.data)
 
+    def put(self, request, pk):
+        if request.user.id != pk and not request.user.is_staff:
+            return Response(
+                {"detail": "Not authorized"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        user = get_object_or_404(User, pk=pk)
+        serializer = UserSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
