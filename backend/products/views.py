@@ -1,6 +1,7 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework import filters
 from django.db.models import Sum
 from rest_framework.permissions import IsAdminUser, AllowAny
 from .models import Product
@@ -9,8 +10,10 @@ from orders.models import OrderItem
 
 
 class ProductViewSet(ModelViewSet):
-    queryset = Product.objects.filter(is_active=True)
+    queryset = Product.objects.filter(is_active=True).order_by("id")
     serializer_class = ProductSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["name", "description", "category__name"]
 
     def get_permissions(self):
         if self.request.method in ["POST", "PUT", "PATCH", "DELETE"]:

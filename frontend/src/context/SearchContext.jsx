@@ -10,16 +10,23 @@ export function SearchProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Load products ONCE (public endpoint)
+  // Fetch products from backend with search query
   useEffect(() => {
     let isMounted = true;
+    let timeoutId;
 
     const fetchProducts = async () => {
       setLoading(true);
+      setError(null);
       try {
-        const res = await Api.get("/products/");
+        // Only fetch if there's a query, or fetch all (first page) if empty
+        const endpoint = query ? `/products/?search=${encodeURIComponent(query)}` : "/products/";
+        const res = await Api.get(endpoint);
+        
         if (isMounted) {
-          setProducts(res.data);
+          // Handle paginated response
+          const results = res.data.results ? res.data.results : res.data;
+          setProducts(results);
         }
       } catch (err) {
         if (isMounted) {
@@ -33,27 +40,19 @@ export function SearchProvider({ children }) {
       }
     };
 
-    fetchProducts();
+    // Debounce search requests
+    timeoutId = setTimeout(() => {
+      fetchProducts();
+    }, 500);
 
     return () => {
       isMounted = false;
+      clearTimeout(timeoutId);
     };
-  }, []);
+  }, [query]);
 
-  // Filtered products (derived state)
-  const filtered = useMemo(() => {
-    if (!query.trim()) return [];
-
-    const lower = query.toLowerCase();
-
-    return products.filter((p) => {
-      return (
-        p.name?.toLowerCase().includes(lower) ||
-        p.description?.toLowerCase().includes(lower) ||
-        p.category?.toLowerCase().includes(lower)
-      );
-    });
-  }, [query, products]);
+  // filtered is now just products, confusing naming but keeps API consistent
+  const filtered = products;
 
   return (
     <SearchContext.Provider

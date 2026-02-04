@@ -5,7 +5,7 @@ import { useCart } from "../../../context/CartContext";
 import { useWishlist } from "../../../context/WishlistContext";
 import Footer from "../../../components/footer";
 import Navbar from "../../../components/navbar";
-import { Home, Package } from "lucide-react"; // icons
+import { Home, Package } from "lucide-react"; 
 
 
 export default function ProductDetail() {

@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import Api from "../../../services/api";
 import { useCart } from "../../../context/CartContext";
 import { useWishlist } from "../../../context/WishlistContext";
+import { useSearch } from "../../../context/SearchContext";
 import Navbar from "../../../components/navbar";
 import Footer from "../../../components/footer";
 
@@ -12,30 +13,23 @@ export default function Search() {
   const initialQuery = params.get("q") || "";
 
   const [query, setQuery] = useState(initialQuery);
-  const [products, setProducts] = useState([]);
   const [filtered, setFiltered] = useState([]);
-
+  
   const { addToCart } = useCart();
   const { addToWishlist } = useWishlist();
 
-  useEffect(() => {
-    Api.get("/products")
-      .then((res) => setProducts(res.data))
-      .catch((err) => console.error("API error:", err));
-  }, []);
+  // Removed local filtering effect as it is now handled by SearchContext
+  const { filtered: contextFiltered, query: contextQuery, setQuery: setContextQuery, loading } = useSearch();
 
+  // Sync local query state with context
   useEffect(() => {
-    if (!query.trim()) return setFiltered([]);
-    const lower = query.toLowerCase();
-    setFiltered(
-      products.filter(
-        (p) =>
-          p.name?.toLowerCase().includes(lower) ||
-          p.description?.toLowerCase().includes(lower) ||
-          p.category?.toLowerCase().includes(lower)
-      )
-    );
-  }, [query, products]);
+    setContextQuery(query);
+  }, [query, setContextQuery]);
+  
+  // Use context results
+  useEffect(() => {
+      setFiltered(contextFiltered);
+  }, [contextFiltered]);
 
   return (
     <>

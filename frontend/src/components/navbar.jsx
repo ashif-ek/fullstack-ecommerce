@@ -2,48 +2,18 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
+import { useSearch } from "../context/SearchContext";
 import Api from "../services/api";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const { cart } = useCart();
+  const { query, setQuery, filtered } = useSearch();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const [products, setProducts] = useState([]);
-  const [filtered, setFiltered] = useState([]);
 
   const navigate = useNavigate();
   const cartCount = cart.length;
-
-  /* ===============================
-     FETCH PRODUCTS (SEARCH)
-  ================================ */
-  useEffect(() => {
-    Api.get("/products/")
-      .then((res) => setProducts(res.data))
-      .catch((err) => console.error("API error:", err));
-  }, []);
-
-  /* ===============================
-     SEARCH FILTER
-  ================================ */
-  useEffect(() => {
-    if (!query.trim()) {
-      setFiltered([]);
-      return;
-    }
-
-    const lower = query.toLowerCase();
-    setFiltered(
-      products.filter(
-        (p) =>
-          p.name?.toLowerCase().includes(lower) ||
-          p.description?.toLowerCase().includes(lower) ||
-          p.category?.toLowerCase().includes(lower)
-      )
-    );
-  }, [query, products]);
 
   const closeMenu = () => setIsMenuOpen(false);
 
@@ -86,7 +56,7 @@ export default function Navbar() {
             className="w-full px-3 py-1.5 rounded-full bg-white/90 text-black text-sm placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-white/60 shadow-md"
           />
 
-          {filtered.length > 0 && (
+          {query && filtered.length > 0 && (
             <div className="absolute mt-2 w-full bg-white text-black rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
               {filtered.map((p) => (
                 <div
