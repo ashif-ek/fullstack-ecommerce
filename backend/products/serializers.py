@@ -20,6 +20,22 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 class AdminProductSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+    category = serializers.SlugRelatedField(
+        slug_field="name",
+        queryset=Product.category.field.related_model.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+
     class Meta:
         model = Product
         fields = "__all__"
+
+    def get_image(self, obj):
+        request = self.context.get("request")
+        if obj.image:
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
+        return None

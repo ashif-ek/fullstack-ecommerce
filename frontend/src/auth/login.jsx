@@ -31,7 +31,13 @@ export default function Login() {
       setUser(meRes.data);
 
       toast.success("Logged in successfully");
-      navigate("/", { replace: true });
+      
+      const { is_staff, is_superuser } = meRes.data;
+      if (is_staff || is_superuser) {
+        navigate("/admin", { replace: true });
+      } else {
+        navigate("/", { replace: true });
+      }
     } catch (err) {
       console.error("Login error:", err);
       toast.error(

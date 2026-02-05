@@ -42,7 +42,13 @@ class OrderSerializer(serializers.ModelSerializer):
             "created_at",
             "items",
             "payment_id",
+            "user_email",
         ]
+
+    user_email = serializers.SerializerMethodField()
+
+    def get_user_email(self, obj):
+        return obj.user.email if obj.user else "Unknown"
 
     def get_payment_id(self, obj):
         if hasattr(obj, "payment"):

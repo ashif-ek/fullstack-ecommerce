@@ -44,6 +44,12 @@ export default function Navbar() {
           <Link to="/whishlist" className="text-xs uppercase tracking-widest hover:text-gray-300">
             Favorite
           </Link>
+          {/* Admin Link */}
+          {(user?.is_staff || user?.is_superuser) && (
+            <Link to="/admin" className="text-xs uppercase tracking-widest text-red-400 hover:text-red-300">
+              Admin
+            </Link>
+          )}
         </div>
 
         {/* DESKTOP SEARCH */}
@@ -170,6 +176,12 @@ export default function Navbar() {
           <Link to="/whishlist" onClick={closeMenu} className="text-base tracking-widest font-light">
             Favorite
           </Link>
+
+          {(user?.is_staff || user?.is_superuser) && (
+            <Link to="/admin" onClick={closeMenu} className="text-base tracking-widest text-red-400">
+              Admin Dashboard
+            </Link>
+          )}
 
           <hr className="w-1/2 border-gray-700" />
 

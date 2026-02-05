@@ -16,15 +16,8 @@ export default function UserDetails() {
     const fetchUser = async () => {
       setLoading(true);
       try {
-        // const res = await Api.get(`/users/${id}`);
-        // setUser(res.data);
-
-const res = await Api.get(`/users/${id}`);
-if (res.data.role !== "admin") {
-  setUser(res.data);
-} else {
-  setUser(null); // to hide admin  
-}
+        const res = await Api.get(`/admin/users/${id}/`);
+        setUser(res.data);
       } catch (err) {
         console.error("Error fetching user:", err);
         toast.error("Failed to load user details");

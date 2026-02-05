@@ -17,11 +17,12 @@ export default function AdminUsers() {
     const fetchUsers = async () => {
       setLoading(true);
       try {
-        const res = await Api.get("/users");
+        const res = await Api.get("/admin/users/");
+        // Pagination disabled for admin views, so result is always array
         setUsers(res.data);
         setFilteredUsers(res.data);
-      } catch (err) {
-        console.error("Error fetching users:", err);
+      } catch (error) {
+        console.error("Error fetching users:", error);
         toast.error("Failed to load users");
       }
       setLoading(false);

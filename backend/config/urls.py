@@ -13,6 +13,7 @@ from drf_spectacular.views import (
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("api/admin/", include("accounts.admin_urls")),
     path("api/auth/", include("accounts.urls")),
     path("api/", include("products.urls")),
     path("api/cart/", include("cart.urls")),

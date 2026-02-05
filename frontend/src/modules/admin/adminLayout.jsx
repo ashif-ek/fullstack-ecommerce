@@ -1,7 +1,7 @@
 
 
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { FiHome, FiBox, FiUsers, FiLogOut, FiSettings, FiPieChart, FiChevronRight } from "react-icons/fi";
+import { FiHome, FiBox, FiUsers, FiLogOut, FiSettings, FiPieChart, FiChevronRight, FiShoppingBag } from "react-icons/fi";
 import { useAuth } from "../../context/AuthContext";
 import { useState } from "react";
 
@@ -13,6 +13,7 @@ export default function AdminLayout() {
   const navItems = [
     { name: "Dashboard", path: "/admin", icon: <FiHome className="text-lg" /> },
     { name: "Products", path: "/admin/products", icon: <FiBox className="text-lg" /> },
+    { name: "Orders", path: "/admin/orders", icon: <FiShoppingBag className="text-lg" /> },
     { name: "User manage", path: "/admin/users", icon: <FiUsers className="text-lg" /> },
     { name: "user overview", path: "/admin/overview", icon: <FiPieChart className="text-lg" /> },
     // { name: "Settings", path: "/admin/settings", icon: <FiSettings className="text-lg" /> },

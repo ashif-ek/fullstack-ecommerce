@@ -47,10 +47,9 @@ export default function UserOverview() {
     const fetchUsers = async () => {
       setLoading(true);
       try {
-        const res = await Api.get("/users");
-        const normalUsers = res.data.filter((u) => u.role !== "admin");
-        setUsers(normalUsers);
-        setFilteredUsers(normalUsers);
+        const res = await Api.get("/admin/users/");
+        setUsers(res.data);
+        setFilteredUsers(res.data);
       } catch (err) {
         console.error("Error fetching users:", err);
         toast.error("Failed to load users");

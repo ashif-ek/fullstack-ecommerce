@@ -16,5 +16,5 @@ export default function AdminRoute() {
     return <Navigate to="/login" replace />;
   }
 
-  return user.role === "admin" ? <Outlet /> : <Navigate to="/" replace />;
+  return (user.is_staff || user.is_superuser) ? <Outlet /> : <Navigate to="/" replace />;
 }

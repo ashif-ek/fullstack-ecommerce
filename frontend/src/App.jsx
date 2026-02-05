@@ -21,6 +21,7 @@ const ProductDetail = lazy(() => import("./modules/user/pages/ProductDetail"));
 
 // Admin Pages
 const AdminProducts = lazy(() => import("./modules/admin/admin-products"));
+const AdminOrders = lazy(() => import("./modules/admin/admin-orders"));
 const AdminUsers = lazy(() => import("./modules/admin/admin-user"));
 const UserDetails = lazy(() => import("./modules/admin/user-details"));
 const AdminDashboard = lazy(() => import("./modules/admin/dashboard"));
@@ -89,6 +90,7 @@ function AppWithProviders() {
                           <Route index element={<AdminDashboard />} />
                           <Route path="overview" element={<UserOverview />} />
                           <Route path="products" element={<AdminProducts />} />
+                          <Route path="orders" element={<AdminOrders />} />
                           <Route path="users" element={<AdminUsers />} />
                           <Route path="users/:id" element={<UserDetails />} />
                         </Route>

@@ -1,15 +1,32 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import User
-from orders.serializers import OrderSerializer
+from orders.serializers import OrderSerializer, OrderItemSerializer
+from orders.models import Order
 
 
 class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "email", "orders", "is_staff"]
+        read_only_fields = ["is_staff"]
+
+
+class AdminUserSerializer(serializers.ModelSerializer):
     orders = OrderSerializer(many=True, read_only=True)
 
     class Meta:
         model = User
-        fields = ["id", "username", "email", "orders"]
+        fields = "__all__"
+
+
+class AdminOrderSerializer(serializers.ModelSerializer):
+    user_email = serializers.ReadOnlyField(source="user.email")
+    items = OrderItemSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Order
+        fields = "__all__"
 
 
 class RegisterSerializer(serializers.ModelSerializer):

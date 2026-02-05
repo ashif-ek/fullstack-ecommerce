@@ -49,7 +49,7 @@ export default function AdminProducts() {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const { data } = await Api.get("/products");
+      const { data } = await Api.get("/admin/products/");
       // Add a fallback for images to avoid errors
       const productsWithImages = data.map(p => ({ ...p, images: p.images || [] }));
       setProducts(productsWithImages);
@@ -75,7 +75,7 @@ export default function AdminProducts() {
       result = result.filter(p =>
         p.name.toLowerCase().includes(s) ||
         p.description.toLowerCase().includes(s) ||
-        p.category.toLowerCase().includes(s)
+        (p.category || "").toLowerCase().includes(s)
       );
     }
     if (category !== "all") result = result.filter(p => p.category === category);
@@ -84,7 +84,7 @@ export default function AdminProducts() {
     setFilteredProducts(result);
   }, [filters, products]);
 
-  const categories = [...new Set(products.map(p => p.category))].sort();
+  const categories = [...new Set(products.map(p => p.category).filter(Boolean))].sort();
 
   const resetForm = () => {
     setFormData({
@@ -152,7 +152,7 @@ export default function AdminProducts() {
   const handleDelete = async (id, name) => {
     if (!window.confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) return;
     try {
-      await Api.delete(`/products/${id}/`);
+      await Api.delete(`/admin/products/${id}/`);
       toast.success(`Product "${name}" deleted.`);
       fetchProducts(); // Refresh data
     } catch (error) {
@@ -164,7 +164,7 @@ export default function AdminProducts() {
   const toggleStatus = async (product) => {
     try {
       const updated = { ...product, isActive: !product.isActive };
-      await Api.put(`/products/${product.id}`, updated);
+      await Api.put(`/admin/products/${product.id}/`, updated);
       toast.success(`Product "${product.name}" has been ${updated.isActive ? "activated" : "deactivated"}.`);
       fetchProducts(); // Refresh data
     } catch (error) {
@@ -288,7 +288,7 @@ export default function AdminProducts() {
                       </div>
                     </td>
                     <td className="p-4">{p.category}</td>
-                    <td className="p-4 font-medium">${p.price.toFixed(2)}</td>
+                    <td className="p-4 font-medium">${parseFloat(p.price).toFixed(2)}</td>
                     <td className="p-4">{p.count} units</td>
                     <td className="p-4">
                       <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${

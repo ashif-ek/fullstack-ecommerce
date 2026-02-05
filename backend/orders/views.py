@@ -51,3 +51,38 @@ class OrderCancelView(APIView):
                 {"detail": e.message if hasattr(e, "message") else str(e)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+class OrderListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if request.user.is_staff or request.user.is_superuser:
+            orders = Order.objects.all().order_by("-created_at")
+        else:
+            orders = Order.objects.filter(user=request.user).order_by("-created_at")
+
+        from .serializers import OrderSerializer
+
+        serializer = OrderSerializer(orders, many=True)
+        return Response(serializer.data)
+
+
+class OrderDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, pk):
+        """Allow admins to update order status."""
+        if not (request.user.is_staff or request.user.is_superuser):
+            return Response(
+                {"detail": "Not authorized"}, status=status.HTTP_403_FORBIDDEN
+            )
+
+        order = get_object_or_404(Order, pk=pk)
+
+        # Only allow updating specific fields for now (like status)
+        serializer = OrderSerializer(order, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

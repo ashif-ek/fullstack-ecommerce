@@ -12,33 +12,36 @@ export default function AdminDashboard() {
 const normalizeOrders = (rawOrders) =>
   rawOrders.map((o, idx) => ({
     id: o.id || `order-${idx}`,
-    totalPrice: Number(o.total || o.totalPrice || o.amount || 0),
-    createdAt: dayjs(o.date || o.created_at || o.createdAt),
+    totalPrice: Number(o.total_amount || o.totalPrice || o.amount || 0),
+    createdAt: dayjs(o.created_at || o.date || o.createdAt),
     status: o.status || "Completed",
-  products: (o.items || o.products || []).map((p) => ({
-      id: p.id,
-    name: p.name,
-    image: p.images,
+    products: (o.items || []).map((p) => ({
+      id: p.product_id || p.id,
+      name: p.product_name || p.name,
+      image: p.product_image || p.image,
       quantity: p.quantity || 1,
     })),
   }));
 
-useEffect(() => {
-  const fetchData = async () => {
-    const resProducts = await Api.get("/products");
-    setProducts(resProducts.data);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const resProducts = await Api.get("/admin/products/");
+        setProducts(resProducts.data);
 
-    const resUsers = await Api.get("/users");
-    setUsers(resUsers.data);
+        const resUsers = await Api.get("/admin/users/");
+        setUsers(resUsers.data);
 
-    const allOrders = resUsers.data.flatMap((u) =>
-      normalizeOrders(u.orders || [])
-    );
-    setOrders(allOrders);
-  };
+        // Fetch orders directly since users might not return nested orders in admin view
+        const resOrders = await Api.get("/admin/orders/");
+        setOrders(normalizeOrders(resOrders.data));
+      } catch (error) {
+        console.error("Dashboard fetch error:", error);
+      }
+    };
 
-  fetchData();
-}, []);
+    fetchData();
+  }, []);
 
 
   const totalRevenue = orders.reduce((sum, o) => sum + o.totalPrice, 0);
@@ -68,11 +71,11 @@ useEffect(() => {
 
   // stock level
   const stockData = products
-    .sort((a, b) => b.count - a.count)
+    .sort((a, b) => (b.stock || 0) - (a.stock || 0))
     .slice(0, 10)
     .map((p) => ({
       name: p.name.length > 15 ? p.name.substring(0, 15) + "..." : p.name,
-      stock: p.count,
+      stock: p.stock || 0,
     }));
 
   // recent orders
