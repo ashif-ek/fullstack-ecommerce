@@ -1,0 +1,50 @@
+name: Deploy Backend to EC2
+
+on:
+  push:
+    paths:
+      - "backend/**"
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy backend via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+
+          script: |
+            set -e
+
+            echo " Deploying Backend..."
+
+            cd ~/apps/fullstack-ecommerce/backend
+
+            echo " Pull latest code"
+            git pull origin main
+
+            echo " Activate venv"
+            source venv/bin/activate
+
+            echo " Install requirements"
+            pip install -r requirements.txt
+
+            echo " Run migrations (DB update)"
+            python manage.py migrate --noinput
+
+            echo " Collect static files"
+            python manage.py collectstatic --noinput
+
+            echo " Restart Gunicorn"
+            sudo systemctl restart gunicorn
+
+            echo " Reload Nginx"
+            sudo systemctl reload nginx
+
+            echo " Backend deployed successfully!"
