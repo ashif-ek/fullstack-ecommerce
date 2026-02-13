@@ -9,7 +9,9 @@ on:
 
 jobs:
   deploy:
+    name: Deploy Backend
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Deploy Backend via SSH
@@ -18,46 +20,66 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
+
           script_stop: true
           command_timeout: 15m
 
           script: |
-            set -e
+            set -euo pipefail
 
-            echo "Starting backend deployment..."
+            echo "========================================="
+            echo " Starting Backend Deployment"
+            echo " Server: $(hostname)"
+            echo " Time:   $(date)"
+            echo "========================================="
 
-            cd /home/ubuntu/apps/fullstack-ecommerce/backend
+            APP_DIR="/home/ubuntu/apps/fullstack-ecommerce/backend"
 
-            echo "Pulling latest code..."
-            git pull origin main
+            echo "→ Moving to backend directory..."
+            cd "$APP_DIR"
 
-            echo "Ensuring virtual environment exists..."
+            echo "→ Syncing server code with origin/main..."
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "→ Ensuring Python virtual environment exists..."
             if [ ! -d "venv" ]; then
               python3 -m venv venv
             fi
 
-            echo "Activating venv..."
+            echo "→ Activating virtual environment..."
             source venv/bin/activate
 
-            echo "Installing dependencies..."
+            echo "→ Upgrading pip tooling..."
+            pip install --upgrade pip setuptools wheel
+
+            echo "→ Installing dependencies..."
             pip install --upgrade -r requirements.txt
 
-            echo "Running Django checks..."
-            python manage.py check --deploy
+            echo "→ Running Django production safety checks..."
+            python3 manage.py check --deploy
 
-            echo "Applying migrations..."
-            python manage.py migrate --noinput
+            echo "→ Applying database migrations..."
+            python3 manage.py migrate --noinput
 
-            echo "Collecting static files..."
-            python manage.py collectstatic --noinput
+            echo "→ Collecting static files..."
+            python3 manage.py collectstatic --noinput
 
-            echo "Restarting Gunicorn..."
+            echo "→ Restarting Gunicorn service..."
             sudo systemctl restart gunicorn
 
-            echo "Reloading Nginx..."
+            echo "→ Reloading Nginx..."
             sudo systemctl reload nginx
 
-            echo "Running health check..."
+            echo "→ Waiting briefly for services to come up..."
+            sleep 2
+
+            echo "→ Running internal health check (Gunicorn)..."
             curl -f http://127.0.0.1:8000/api/health/
 
-            echo "Backend deployed successfully!"
+            echo "→ Running public health check (Nginx + SSL)..."
+            curl -f https://noirel.duckdns.org/api/health/
+
+            echo "========================================="
+            echo " Backend Deployment Successful"
+            echo "========================================="
