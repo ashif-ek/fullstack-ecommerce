@@ -2,49 +2,62 @@ name: Deploy Backend to EC2
 
 on:
   push:
-    paths:
-      - "backend/**"
     branches:
       - main
+    paths:
+      - "backend/**"
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy backend via SSH
-        uses: appleboy/ssh-action@v1.0.0
+      - name: Deploy Backend via SSH
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: true
+          command_timeout: 15m
 
           script: |
             set -e
 
-            echo " Deploying Backend..."
+            echo "Starting backend deployment..."
 
-            cd ~/apps/fullstack-ecommerce/backend
+            cd /home/ubuntu/apps/fullstack-ecommerce/backend
 
-            echo " Pull latest code"
+            echo "Pulling latest code..."
             git pull origin main
 
-            echo " Activate venv"
+            echo "Ensuring virtual environment exists..."
+            if [ ! -d "venv" ]; then
+              python3 -m venv venv
+            fi
+
+            echo "Activating venv..."
             source venv/bin/activate
 
-            echo " Install requirements"
-            pip install -r requirements.txt
+            echo "Installing dependencies..."
+            pip install --upgrade -r requirements.txt
 
-            echo " Run migrations (DB update)"
+            echo "Running Django checks..."
+            python manage.py check --deploy
+
+            echo "Applying migrations..."
             python manage.py migrate --noinput
 
-            echo " Collect static files"
+            echo "Collecting static files..."
             python manage.py collectstatic --noinput
 
-            echo " Restart Gunicorn"
+            echo "Restarting Gunicorn..."
             sudo systemctl restart gunicorn
 
-            echo " Reload Nginx"
+            echo "Reloading Nginx..."
             sudo systemctl reload nginx
 
-            echo " Backend deployed successfully!"
+            echo "Running health check..."
+            curl -f http://127.0.0.1:8000/api/health/
+
+            echo "Backend deployed successfully!"
