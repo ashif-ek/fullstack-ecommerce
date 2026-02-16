@@ -39,7 +39,7 @@ export default function Wishlist() {
                 className="relative bg-gradient-to-b from-gray-900 to-black rounded-lg overflow-hidden group"
               >
                 <img
-                  src={item.images}
+                  src={item.image}
                   alt={item.name}
                   className="w-full h-80 object-cover transform transition-transform duration-700 group-hover:scale-110"
                 />

@@ -6,6 +6,8 @@ from orders.models import Order
 
 
 class UserSerializer(serializers.ModelSerializer):
+    orders = OrderSerializer(many=True, read_only=True)
+
     class Meta:
         model = User
         fields = ["id", "username", "email", "orders", "is_staff"]
