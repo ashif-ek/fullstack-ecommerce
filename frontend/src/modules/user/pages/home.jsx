@@ -11,7 +11,9 @@ import TopSellingProducts from "./TopSellingProducts";
 export default function Home() {
   return (
     <>
-    <Navbar/>
+    <div className="absolute top-0 left-0 w-full z-50">
+      <Navbar/>
+    </div>
     <Hero/>
     {/* <Carts/>
     <Orders/>
