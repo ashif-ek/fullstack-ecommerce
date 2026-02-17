@@ -8,4 +8,5 @@ razorpay
 Pillow
 drf-spectacular
 django-filter
+gunicorn
 
