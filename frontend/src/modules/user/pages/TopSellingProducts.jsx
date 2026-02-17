@@ -33,10 +33,17 @@ const TopSellingSkeletonLoader = () => (
 ================================ */
 
 const TopProductCard = memo(({ product }) => {
-  const imageUrl =
-    Array.isArray(product.images)
-      ? product.images[0]
-      : product.images || product.image || "";
+  const getImageUrl = (itm) => {
+    let img = Array.isArray(itm.images) ? itm.images[0] : itm.images || itm.image || "";
+    // If it's a relative path (starts with /), prepend API URL
+    if (img && img.startsWith("/")) {
+        return `${import.meta.env.VITE_API_URL}${img}`;
+    }
+    // If it's already a full URL or empty, return as is
+    return img;
+  };
+    
+  const imageUrl = getImageUrl(product);
 
   return (
     <Link
@@ -88,6 +95,7 @@ export default function TopSellingProducts() {
         const res = await Api.get("/products/top_selling/?limit=4");
         // The endpoint returns the list of products directly
         const products = Array.isArray(res.data) ? res.data : [];
+        console.log("Top Selling Products Data:", products);
         setTopProducts(products);
       } catch (err) {
         console.error("Top products error:", err);
