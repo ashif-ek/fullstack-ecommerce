@@ -35,10 +35,27 @@ export default function Register() {
       navigate("/login", { replace: true });
     } catch (err) {
       console.error("Register error:", err);
-      toast.error(
-        err.response?.data?.detail ||
-          "Registration failed"
-      );
+      
+      let errorMessage = "Registration failed";
+      
+      if (err.response && err.response.data) {
+        const data = err.response.data;
+        if (typeof data === "string") {
+            errorMessage = data;
+        } else if (typeof data === "object") {
+             // If validation errors (e.g., { username: ["Exists"], email: ["Invalid"] })
+             // Join them into a readable string
+             const messages = Object.entries(data).map(([key, val]) => {
+                const msg = Array.isArray(val) ? val.join(" ") : val;
+                // If the key is 'detail' or 'non_field_errors', don't show the key
+                if (key === 'detail' || key === 'non_field_errors') return msg;
+                return `${key}: ${msg}`; // e.g., "username: A user with that username already exists."
+             });
+             errorMessage = messages.join("\n");
+        }
+      }
+
+      toast.error(errorMessage, { autoClose: 5000 });
     }
   };
 
