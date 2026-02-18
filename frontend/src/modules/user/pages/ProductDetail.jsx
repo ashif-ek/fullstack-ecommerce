@@ -180,18 +180,24 @@ export default function ProductDetail() {
                         <div className="flex gap-4 pt-4 border-t border-white/10">
                             {cart.some(item => item.id === product.id) ? (
                                 <Link
-                                    to="/cart"
+                                    to="/carts"
                                     className="flex-1 flex items-center justify-center px-8 py-4 rounded-full bg-white text-black font-medium hover:bg-gray-200 transition uppercase tracking-wider text-sm"
                                 >
                                     Go to Cart
                                 </Link>
                             ) : (
                                 <button
-                                    onClick={() => addToCart(product.id)}
-                                    disabled={product.stock <= 0}
+                                    onClick={() => {
+                                        if (product.stock > 0) {
+                                            addToCart(product.id);
+                                        } else {
+                                            addToWishlist(product);
+                                            toast.success("Saved to Wishlist!");
+                                        }
+                                    }}
                                     className="flex-1 px-8 py-4 rounded-full bg-white text-black font-medium hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider text-sm"
                                 >
-                                    {product.stock > 0 ? "Add to Cart" : "Sold Out"}
+                                    {product.stock > 0 ? "Add to Cart" : "Save to Cart"}
                                 </button>
                             )}
                             {wishlist.some(item => item.id === product.id) ? (

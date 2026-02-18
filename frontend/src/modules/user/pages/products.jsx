@@ -41,13 +41,13 @@ const ProductSkeletonLoader = () => (
 );
 
 // --- Memoized Product Card Component ---
-const ProductCard = React.memo(({ product, onOpenModal, innerRef }) => {
+const ProductCard = React.memo(({ product, innerRef }) => {
   return (
-    <div
+    <Link
       ref={innerRef}
       key={product.id}
-      className="group relative bg-gradient-to-b from-gray-900 to-black rounded-lg overflow-hidden transition-all duration-700 hover:scale-105 cursor-pointer"
-      onClick={() => onOpenModal(product)}
+      className="group relative bg-gradient-to-b from-gray-900 to-black rounded-lg overflow-hidden transition-all duration-700 hover:scale-105 cursor-pointer block"
+      to={`/products/${product.id}`}
     >
       <div className="overflow-hidden">
         <img
@@ -60,14 +60,20 @@ const ProductCard = React.memo(({ product, onOpenModal, innerRef }) => {
         {/* Badges */}
         <div className="absolute top-4 left-4 flex flex-col gap-2">
             {product.stock > 0 && product.stock < 10 && (
-                 <span className="bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider shadow-md">
+                 <span className="backdrop-blur-md bg-white/10 border border-white/20 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-lg">
                     Low Stock
                 </span>
             )}
-            {/* New Arrival Logic: Check if created within 7 days */}
+            {/* New Arrival Logic: < 7 days */}
             {(new Date() - new Date(product.created_at)) / (1000 * 60 * 60 * 24) < 7 && (
-                <span className="bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider shadow-md">
+                <span className="backdrop-blur-md bg-blue-600/30 border border-blue-500/30 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-lg">
                     New
+                </span>
+            )}
+            {/* Fresh Logic: < 24 hours */}
+            {(new Date() - new Date(product.created_at)) / (1000 * 60 * 60) < 24 && (
+                <span className="backdrop-blur-md bg-purple-600/40 border border-purple-500/30 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-lg animate-pulse">
+                    Just Dropped
                 </span>
             )}
         </div>
@@ -77,7 +83,7 @@ const ProductCard = React.memo(({ product, onOpenModal, innerRef }) => {
         <p className="text-sm text-gray-300 mb-3 font-light tracking-widest">{product.category}</p>
         <p className="text-xl font-serif">$ {product.price}</p>
       </div>
-    </div>
+    </Link>
   );
 });
 
@@ -213,9 +219,9 @@ export default function Products() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
               {products.map((p, index) => {
                 if (products.length === index + 1) {
-                  return <ProductCard product={p} onOpenModal={openProductModal} key={p.id} innerRef={lastProductElementRef} />;
+                  return <ProductCard product={p} key={p.id} innerRef={lastProductElementRef} />;
                 } else {
-                  return <ProductCard product={p} onOpenModal={openProductModal} key={p.id} />;
+                  return <ProductCard product={p} key={p.id} />;
                 }
               })}
             </div>
@@ -257,7 +263,7 @@ export default function Products() {
                     <div className="flex items-center space-x-4">
                       {isAddedToCart ? (
                         <Link
-                          to="/cart"
+                          to="/carts"
                           className="w-full py-3 bg-white text-black text-sm tracking-widest uppercase hover:bg-gray-200 transition-colors duration-300 flex items-center justify-center font-medium"
                         >
                           Go to Cart
@@ -268,7 +274,7 @@ export default function Products() {
                           disabled={selectedProduct.count <= 0}
                           className="w-full py-3 bg-white text-black text-sm tracking-widest uppercase hover:bg-gray-200 transition-colors duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
                         >
-                          {selectedProduct.count > 0 ? 'Add to Cart' : 'Sold Out'}
+                          {selectedProduct.count > 0 ? 'Add to Cart' : 'Save to Cart'}
                         </button>
                       )}
                     </div>
