@@ -14,7 +14,6 @@ from drf_spectacular.views import (
 
 urlpatterns = [
     path("api/health/", health_check),
-
     path("admin/", admin.site.urls),
     path("api/admin/", include("accounts.admin_urls")),
     path("api/auth/", include("accounts.urls")),
@@ -22,7 +21,7 @@ urlpatterns = [
     path("api/orders/", include("orders.urls")),
     path("api/payments/", include("payments.urls")),
     path("api/products/", include("products.urls")),
-
+    path("api/communication/", include("communication.urls")),
     path("api/users/<int:pk>/", UserDetailView.as_view()),
     # Swagger UI
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),

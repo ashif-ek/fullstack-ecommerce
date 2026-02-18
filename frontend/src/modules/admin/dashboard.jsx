@@ -81,6 +81,23 @@ const normalizeOrders = (rawOrders) =>
   // recent orders
   const recentOrders = [...orders]
     .sort((a, b) => b.createdAt.valueOf() - a.createdAt.valueOf())
+    .sort((a, b) => b.createdAt.valueOf() - a.createdAt.valueOf())
+    .slice(0, 5);
+
+  // Top Selling Products
+  const topProducts = orders
+    .reduce((acc, order) => {
+      order.products.forEach((p) => {
+        const existing = acc.find((prod) => prod.name === p.name);
+        if (existing) {
+          existing.quantity += p.quantity;
+        } else {
+          acc.push({ name: p.name, quantity: p.quantity });
+        }
+      });
+      return acc;
+    }, [])
+    .sort((a, b) => b.quantity - a.quantity)
     .slice(0, 5);
 
   const COLORS = ["#0078D4","#00B294","#FFB900","#E81123","#5C2D91","#1E88E5","#D81B60","#8E24AA","#F57C00","#43A047",];
@@ -278,8 +295,29 @@ const normalizeOrders = (rawOrders) =>
             </div>
           </div>
 
-          {/* Stock + Recent Orders */}
+          {/* Stock + Recent Orders + Top Selling */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Top Selling Products */}
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 lg:col-span-2">
+              <h3 className="font-bold text-lg mb-6">Top Selling Products</h3>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={topProducts} layout="vertical">
+                    <XAxis type="number" />
+                    <YAxis type="category" dataKey="name" width={150} tick={{fontSize: 12}} />
+                    <Tooltip
+                      formatter={(value) => [`${value} sold`, "Sales"]}
+                      contentStyle={{
+                        borderRadius: "8px",
+                        border: "none",
+                        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                      }}
+                    />
+                    <Bar dataKey="quantity" fill="#8E24AA" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
             {/* Stock Levels */}
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
               <h3 className="font-bold text-lg mb-6">Stock Levels</h3>

@@ -32,17 +32,24 @@ export default function OrderHistory({ orders, handleClearOrders, handleCancelOr
                 </div>
                 <div className="mt-2 md:mt-0 md:text-right">
                   <p className="text-sm text-gray-400">TOTAL</p>
-                  <p className="text-xl font-serif text-white">₹{parseFloat(order.total_amount || 0).toFixed(2)}</p>
+                  <p className="text-xl font-serif text-white">${parseFloat(order.total_amount || 0).toFixed(2)}</p>
 
-                  {/* Cancel Button */}
-                  {order.status !== 'SHIPPED' && order.status !== 'DELIVERED' && order.status !== 'CANCELLED' && (
-                    <button
-                      onClick={() => handleCancelOrder(order.id)}
-                      className="mt-2 text-xs text-red-500 border border-red-500/50 px-3 py-1 hover:bg-red-500/10 transition-colors uppercase tracking-wider"
-                    >
-                      Cancel Order
-                    </button>
-                  )}
+                  <div className="flex flex-col md:items-end gap-2 mt-2">
+                      {/* Track Order (Dummy) */}
+                      <button className="text-xs text-white border border-white/30 px-3 py-1 hover:bg-white/10 transition-colors uppercase tracking-wider">
+                          Track Order
+                      </button>
+
+                      {/* Cancel Button */}
+                      {order.status !== 'SHIPPED' && order.status !== 'DELIVERED' && order.status !== 'CANCELLED' && (
+                        <button
+                          onClick={() => handleCancelOrder(order.id)}
+                          className="text-xs text-red-500 border border-red-500/50 px-3 py-1 hover:bg-red-500/10 transition-colors uppercase tracking-wider"
+                        >
+                          Cancel Order
+                        </button>
+                      )}
+                  </div>
 
                   {/* Payment ID Details */}
                   {order.payment_id && (
@@ -84,11 +91,11 @@ export default function OrderHistory({ orders, handleClearOrders, handleCancelOr
                     <div className="flex-grow">
                       <p className="font-semibold text-white">{item.product_name || item.name}</p>
                       <p className="text-sm text-gray-400">
-                        Qty: {item.quantity || 1} · ₹{parseFloat(item.unit_price || 0).toFixed(2)} each
+                        Qty: {item.quantity || 1} · ${parseFloat(item.unit_price || 0).toFixed(2)} each
                       </p>
                     </div>
                     <p className="font-serif text-lg">
-                      ₹{(parseFloat(item.unit_price || 0) * (item.quantity || 1)).toFixed(2)}
+                      ${(parseFloat(item.unit_price || 0) * (item.quantity || 1)).toFixed(2)}
                     </p>
                   </div>
                 ))}

@@ -8,6 +8,11 @@ import { Link } from "react-router-dom";
 export default function Cart() {
   const { cart, updateQuantity, removeFromCart, clearCart } = useCart();
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  
+  // Free Shipping Logic
+  const FREE_SHIPPING_THRESHOLD = 100;
+  const progress = Math.min((total / FREE_SHIPPING_THRESHOLD) * 100, 100);
+  const remaining = FREE_SHIPPING_THRESHOLD - total;
 
   return (
     <>
@@ -17,6 +22,30 @@ export default function Cart() {
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl mb-4 tracking-wider">Shopping Cart</h1>
           <div className="w-20 h-px bg-white/40 mx-auto"></div>
+        </div>
+
+        {/* Free Shipping Progress Bar */}
+        <div className="mb-12 max-w-lg mx-auto bg-gray-900/50 p-4 rounded-lg border border-white/10">
+            {total >= FREE_SHIPPING_THRESHOLD ? (
+                <div className="text-center">
+                    <p className="text-green-400 font-medium mb-2">🎉 You've unlocked FREE Shipping!</p>
+                    <div className="w-full bg-gray-700 h-2 rounded-full overflow-hidden">
+                        <div className="bg-green-500 h-full w-full"></div>
+                    </div>
+                </div>
+            ) : (
+                <div className="text-center">
+                    <p className="text-gray-300 mb-2 text-sm">
+                        Add <span className="font-bold text-white">${remaining.toFixed(2)}</span> more for <span className="text-blue-400 font-bold">FREE Shipping</span>
+                    </p>
+                    <div className="w-full bg-gray-700 h-2 rounded-full overflow-hidden">
+                        <div 
+                            className="bg-blue-500 h-full transition-all duration-500 ease-out" 
+                            style={{ width: `${progress}%` }}
+                        ></div>
+                    </div>
+                </div>
+            )}
         </div>
 
         {cart.length === 0 ? (

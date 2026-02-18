@@ -1,6 +1,27 @@
 
 
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import Api from "../services/api";
+import { toast } from "react-toastify";
+
 export default function Footer() {
+  const [email, setEmail] = useState("");
+
+  const handleSubscribe = async (e) => {
+    e.preventDefault();
+    if (!email) return;
+
+    try {
+      await Api.post("/communication/newsletter/", { email });
+      toast.success("Subscribed successfully!");
+      setEmail("");
+    } catch (err) {
+      console.error("Newsletter error:", err);
+      toast.error("Subscription failed. Try again.");
+    }
+  };
+
   return (
     <footer className="bg-black text-gray-400 py-12 border-t border-gray-800">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
@@ -46,9 +67,9 @@ export default function Footer() {
           <div>
             <h3 className="text-white text-sm uppercase tracking-widest mb-4 font-light">Support</h3>
             <ul className="space-y-3">
-              <li><a href="#" className="text-sm hover:text-white transition-colors duration-300">Contact Us</a></li>
-              <li><a href="#" className="text-sm hover:text-white transition-colors duration-300">Shipping & Returns</a></li>
-              <li><a href="#" className="text-sm hover:text-white transition-colors duration-300">FAQ</a></li>
+              <li><Link to="/contact" className="text-sm hover:text-white transition-colors duration-300">Contact Us</Link></li>
+              <li><Link to="/shipping-returns" className="text-sm hover:text-white transition-colors duration-300">Shipping & Returns</Link></li>
+              <li><Link to="/faq" className="text-sm hover:text-white transition-colors duration-300">FAQ</Link></li>
               <li><a href="#" className="text-sm hover:text-white transition-colors duration-300">Store Locator</a></li>
               <li><a href="#" className="text-sm hover:text-white transition-colors duration-300">Care Guide</a></li>
             </ul>
@@ -57,10 +78,12 @@ export default function Footer() {
           <div>
             <h3 className="text-white text-sm uppercase tracking-widest mb-4 font-light">Stay Connected</h3>
             <p className="text-sm mb-4 leading-relaxed">Subscribe to receive updates on new collections and exclusive offers.</p>
-            <form className="flex flex-col space-y-3">
+            <form onSubmit={handleSubscribe} className="flex flex-col space-y-3">
               <input 
                 type="email" 
                 placeholder="Your email address" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="bg-gray-900 border border-gray-700 px-4 py-2 text-sm focus:outline-none focus:border-white transition-colors"
               />
               <button 
@@ -78,8 +101,8 @@ export default function Footer() {
             © {new Date().getFullYear()} NOIRÉL. All rights reserved.
           </p>
           <div className="flex space-x-6 text-xs">
-            <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
+            <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
             <a href="#" className="hover:text-white transition-colors">Accessibility</a>
           </div>
         </div>

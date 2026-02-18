@@ -61,7 +61,12 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 class AdminProductSerializer(serializers.ModelSerializer):
-    image = serializers.SerializerMethodField()
+    image = serializers.ImageField(required=False)
+    uploaded_images = serializers.ListField(
+        child=serializers.ImageField(allow_empty_file=False, use_url=False),
+        write_only=True,
+        required=False,
+    )
     images = ProductImageSerializer(many=True, read_only=True)
     category = serializers.SlugRelatedField(
         slug_field="name",
@@ -74,10 +79,26 @@ class AdminProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = "__all__"
 
-    def get_image(self, obj):
-        request = self.context.get("request")
-        if obj.image:
-            if request:
-                return request.build_absolute_uri(obj.image.url)
-            return obj.image.url
-        return None
+    def create(self, validated_data):
+        uploaded_images = validated_data.pop("uploaded_images", [])
+        product = Product.objects.create(**validated_data)
+
+        # Handle multiple images
+        for img in uploaded_images:
+            ProductImage.objects.create(product=product, image=img)
+
+        return product
+
+    def update(self, instance, validated_data):
+        uploaded_images = validated_data.pop("uploaded_images", [])
+
+        # Update standard fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        # Add new images to the gallery
+        for img in uploaded_images:
+            ProductImage.objects.create(product=instance, image=img)
+
+        return instance

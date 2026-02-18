@@ -1,4 +1,4 @@
-#production
+# production
 from pathlib import Path
 from datetime import timedelta
 import os
@@ -35,20 +35,19 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     # Third Party Apps
     "rest_framework",
     "corsheaders",
     "drf_spectacular",
     "django_filters",
     "storages",
-
     # Local Apps
     "accounts",
     "products",
     "cart",
     "orders",
     "payments",
+    "communication",
 ]
 
 # ================================
@@ -56,14 +55,11 @@ INSTALLED_APPS = [
 # ================================
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
-
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -111,7 +107,9 @@ DATABASES = {
 # PASSWORD VALIDATION
 # ================================
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+    },
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
@@ -142,19 +140,15 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.AllowAny",
     ],
-
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 9,
-
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
         "rest_framework.filters.SearchFilter",
     ],
-
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
@@ -220,9 +214,7 @@ AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 # In production (EC2 IAM Role), these are NOT required.
 # boto3 will automatically use the EC2 attached IAM role.
 
-AWS_S3_CUSTOM_DOMAIN = (
-    f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com"
-)
+AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com"
 
 AWS_QUERYSTRING_AUTH = False
 AWS_DEFAULT_ACL = None
@@ -248,7 +240,6 @@ STORAGES = {
 }
 
 
-
 CORS_ALLOW_HEADERS = list(default_headers) + [
     "authorization",
 ]
@@ -256,48 +247,10 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
 CORS_ALLOW_CREDENTIALS = True
 
 
-
 # SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 # SECURE_SSL_REDIRECT = True
 # SESSION_COOKIE_SECURE = True
 # CSRF_COOKIE_SECURE = True
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # from pathlib import Path
@@ -446,10 +399,6 @@ CORS_ALLOW_CREDENTIALS = True
 #     "VERSION": "1.0.0",
 #     "SERVE_INCLUDE_SCHEMA": False,
 # }
-
-
-
-
 
 
 # #production

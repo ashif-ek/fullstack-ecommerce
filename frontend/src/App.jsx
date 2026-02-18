@@ -17,7 +17,11 @@ const Search = lazy(() => import("./modules/user/pages/search"));
 const Checkout = lazy(() => import("./modules/user/pages/checkout"));
 const NotFound = lazy(() => import("./modules/user/pages/notfound"));
 const OurStory = lazy(() => import("./modules/user/pages/ourStory"));
-const ProductDetail = lazy(() => import("./modules/user/pages/ProductDetail"));
+const Contact = lazy(() => import("./modules/user/pages/Contact"));
+const ShippingReturns = lazy(() => import("./modules/user/pages/ShippingReturns"));
+const FAQ = lazy(() => import("./modules/user/pages/FAQ"));
+const PrivacyPolicy = lazy(() => import("./modules/user/pages/PrivacyPolicy"));
+const Terms = lazy(() => import("./modules/user/pages/Terms"));
 
 // Admin Pages
 const AdminProducts = lazy(() => import("./modules/admin/admin-products"));
@@ -73,6 +77,11 @@ function AppWithProviders() {
                         <Route path="/products/:id" element={<ProductDetail />} />
                         <Route path="/search" element={<Search />} />
                         <Route path="/ourstory" element={<OurStory />} />
+                        <Route path="/contact" element={<Contact />} />
+                        <Route path="/shipping-returns" element={<ShippingReturns />} />
+                        <Route path="/faq" element={<FAQ />} />
+                        <Route path="/privacy" element={<PrivacyPolicy />} />
+                        <Route path="/terms" element={<Terms />} />
                       </Route>
 
                       {/* Protected user routes */}

@@ -13,18 +13,25 @@ export default function ProductDetail() {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [activeImage, setActiveImage] = useState(null);
-  const { addToCart } = useCart();
-  const { addToWishlist } = useWishlist();
+  const { addToCart, cart } = useCart();
+  const { addToWishlist, wishlist } = useWishlist();
 
   // Review State
   const [reviews, setReviews] = useState([]);
   const [newReview, setNewReview] = useState({ rating: 5, comment: "", title: "Review" });
   const [submitting, setSubmitting] = useState(false);
+  const [relatedProducts, setRelatedProducts] = useState([]);
 
   useEffect(() => {
     fetchProduct();
-    fetchReviews();
+    // fetchReviews(); // merged into product fetch or handled separately if needed
   }, [id]);
+
+  useEffect(() => {
+    if (product?.category) {
+        fetchRelatedProducts();
+    }
+  }, [product]);
 
   const fetchProduct = () => {
     Api.get(`/products/${id}/`)
@@ -36,16 +43,20 @@ export default function ProductDetail() {
       })
       .catch((err) => console.error("API error:", err));
   };
+    
+  const fetchRelatedProducts = async () => {
+    try {
+        const res = await Api.get(`/products/?category=${product.category}`);
+        // Filter out current product and limit to 4
+        const related = res.data.filter(p => p.id !== product.id).slice(0, 4);
+        setRelatedProducts(related);
+    } catch (err) {
+        console.error("Error fetching related products:", err);
+    }
+  };
 
   const fetchReviews = () => {
-      // Assuming endpoint is filtered by product. If not, we rely on product.reviews from detail API for now 
-      // or we can implement a specific fetch if the backend supports /products/:id/reviews
-      // For now, let's try to fetch all reviews for this product if the endpoint exists, 
-      // otherwise we might just rely on product.reviews handling.
-      // Let's rely on product.reviews first, but if we need "load more", we'd need an endpoint.
-      // Based on serializers, product.reviews gives latest 3. 
-      // Let's try to hit the reviews endpoint filtered by product if possible.
-      // Api.get(`/products/reviews/?product=${id}`) -> This is standard Django Filter pattern.
+      // Placeholder if we need separate review fetching
   };
 
   const handleImageClick = (imgUrl) => {
@@ -138,6 +149,15 @@ export default function ProductDetail() {
                     {/* RIGHT: Info */}
                     <div className="flex-1 space-y-8 py-4">
                         <div>
+                            {/* Breadcrumbs (Simple) */}
+                            <div className="flex items-center text-xs text-gray-500 mb-4 tracking-widest uppercase">
+                                <Link to="/" className="hover:text-white transition">Home</Link>
+                                <span className="mx-2">/</span>
+                                <Link to="/products" className="hover:text-white transition">Products</Link>
+                                <span className="mx-2">/</span>
+                                <span className="text-white">{product.name}</span>
+                            </div>
+
                             <p className="text-gray-400 tracking-widest uppercase text-sm mb-2">{product.category}</p>
                             <h1 className="text-4xl md:text-5xl font-light tracking-wide mb-4">{product.name}</h1>
                             <div className="flex items-center gap-2 mb-6">
@@ -146,6 +166,11 @@ export default function ProductDetail() {
                                     <span className="text-xs bg-green-900/30 text-green-400 px-2 py-1 rounded">In Stock</span>
                                 ) : (
                                     <span className="text-xs bg-red-900/30 text-red-400 px-2 py-1 rounded">Out of Stock</span>
+                                )} 
+                                {product.stock > 0 && product.stock < 10 && (
+                                    <span className="text-xs bg-orange-900/30 text-orange-400 px-2 py-1 rounded animate-pulse">
+                                        Low Stock: Only {product.stock} left!
+                                    </span>
                                 )}
                             </div>
                         </div>
@@ -153,24 +178,95 @@ export default function ProductDetail() {
                         <p className="text-gray-300 text-lg leading-relaxed font-light">{product.description}</p>
 
                         <div className="flex gap-4 pt-4 border-t border-white/10">
-                            <button
-                                onClick={() => addToCart(product.id)}
-                                disabled={product.stock <= 0}
-                                className="flex-1 px-8 py-4 rounded-full bg-white text-black font-medium hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider text-sm"
+                            {cart.some(item => item.id === product.id) ? (
+                                <Link
+                                    to="/cart"
+                                    className="flex-1 flex items-center justify-center px-8 py-4 rounded-full bg-white text-black font-medium hover:bg-gray-200 transition uppercase tracking-wider text-sm"
+                                >
+                                    Go to Cart
+                                </Link>
+                            ) : (
+                                <button
+                                    onClick={() => addToCart(product.id)}
+                                    disabled={product.stock <= 0}
+                                    className="flex-1 px-8 py-4 rounded-full bg-white text-black font-medium hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider text-sm"
+                                >
+                                    {product.stock > 0 ? "Add to Cart" : "Sold Out"}
+                                </button>
+                            )}
+                            {wishlist.some(item => item.id === product.id) ? (
+                                <Link
+                                    to="/whishlist"
+                                    className="px-6 py-4 rounded-full border border-white hover:bg-white hover:text-black transition flex items-center justify-center"
+                                    title="Go to Wishlist"
+                                >
+                                    <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                                </Link>
+                            ) : (
+                                <button
+                                    onClick={() => addToWishlist(product)}
+                                    className="px-6 py-4 rounded-full border border-white/30 hover:bg-white hover:text-black transition"
+                                    title="Add to Wishlist"
+                                >
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Social Share */}
+                        <div className="flex gap-4 pt-6 border-t border-white/10">
+                            <span className="text-sm text-gray-400 uppercase tracking-widest">Share:</span>
+                            <button 
+                                onClick={() => {
+                                    navigator.clipboard.writeText(window.location.href);
+                                    toast.success("Link copied to clipboard!");
+                                }}
+                                className="text-gray-400 hover:text-white transition text-xs uppercase tracking-widest"
                             >
-                                {product.stock > 0 ? "Add to Cart" : "Sold Out"}
+                                Copy Link
                             </button>
-                            <button
-                                onClick={() => addToWishlist(product)}
-                                className="px-6 py-4 rounded-full border border-white/30 hover:bg-white hover:text-black transition"
-                                title="Add to Wishlist"
+                            <a 
+                                href={`https://wa.me/?text=${encodeURIComponent(`Check out this ${product.name}: ${window.location.href}`)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-gray-400 hover:text-green-400 transition text-xs uppercase tracking-widest"
                             >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
-                            </button>
+                                WhatsApp
+                            </a>
+                            <a 
+                                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out this ${product.name}`)}&url=${encodeURIComponent(window.location.href)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-gray-400 hover:text-blue-400 transition text-xs uppercase tracking-widest"
+                            >
+                                Twitter
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* RELATED PRODUCTS */}
+            {relatedProducts.length > 0 && (
+                <div className="mb-20">
+                    <h3 className="text-2xl font-light tracking-wide mb-8">You May Also Like</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                        {relatedProducts.map((p) => (
+                             <Link key={p.id} to={`/products/${p.id}`} className="group block">
+                                <div className="aspect-[4/5] overflow-hidden rounded-lg bg-white/5 mb-4">
+                                    <img 
+                                        src={p.image || (p.images && p.images[0]?.image)} 
+                                        alt={p.name} 
+                                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                    />
+                                </div>
+                                <h4 className="text-lg font-light mb-1">{p.name}</h4>
+                                <p className="text-gray-400">${p.price}</p>
+                             </Link>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* REVIEWS SECTION */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">

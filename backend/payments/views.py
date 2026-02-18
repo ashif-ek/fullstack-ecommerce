@@ -29,7 +29,7 @@ class RazorpayPaymentView(APIView):
             {
                 "razorpay_order_id": razorpay_order["id"],
                 "amount": razorpay_order["amount"],
-                "currency": "INR",
+                "currency": "USD",
                 "key": settings.RAZORPAY_KEY_ID,
             }
         )

@@ -2,6 +2,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import filters, permissions
+from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Sum, Avg, Count, Q
 from rest_framework.permissions import IsAdminUser, AllowAny, IsAuthenticatedOrReadOnly
 from .models import Product, ProductReview
@@ -24,9 +25,14 @@ class ProductViewSet(ModelViewSet):
         .order_by("id")
     )
     serializer_class = ProductSerializer
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [
+        filters.SearchFilter,
+        filters.OrderingFilter,
+        DjangoFilterBackend,
+    ]
     search_fields = ["name", "description", "category__name"]
     ordering_fields = ["price", "created_at", "average_rating", "total_reviews"]
+    filterset_fields = ["category"]
 
     def get_permissions(self):
         if self.request.method in ["POST", "PUT", "PATCH", "DELETE"]:
@@ -64,9 +70,6 @@ class ProductViewSet(ModelViewSet):
 
         serializer = self.get_serializer(ordered_products, many=True)
         return Response(serializer.data)
-
-
-
 
 
 class ProductReviewViewSet(ModelViewSet):

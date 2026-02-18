@@ -23,7 +23,9 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [editFormData, setEditFormData] = useState({
       username: user?.username || "",
+      username: user?.username || "",
       email: user?.email || "",
+      profile_picture: null,
   });
 
   const handleEditChange = (e) => {
@@ -32,7 +34,16 @@ export default function Profile() {
 
   const handleUpdateProfile = async () => {
       try {
-          await Api.put(`/users/${user.id}/`, editFormData);
+          const data = new FormData();
+          data.append("username", editFormData.username);
+          data.append("email", editFormData.email);
+          if (editFormData.profile_picture instanceof File) {
+            data.append("profile_picture", editFormData.profile_picture);
+          }
+
+          await Api.put(`/users/${user.id}/`, data, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
           toast.success("Profile updated successfully! Refreshing...");
           setTimeout(() => window.location.reload(), 1500); 
       } catch (err) {
@@ -124,6 +135,13 @@ const handleCancelOrder = async (orderId) => {
         <div className="max-w-6xl mx-auto py-20 px-6">
           {/* Header */}
           <div className="text-center mb-12">
+            <div className="relative w-24 h-24 mx-auto mb-4">
+              <img 
+                src={user.profile_picture || "https://ui-avatars.com/api/?name=" + user.username} 
+                alt={user.username} 
+                className="w-full h-full rounded-full object-cover border-2 border-white/20"
+              />
+            </div>
             <h1 className="text-4xl md:text-5xl mb-2 tracking-wider">My Account</h1>
             <p className="text-gray-400">Welcome back, {user.username}</p>
           </div>

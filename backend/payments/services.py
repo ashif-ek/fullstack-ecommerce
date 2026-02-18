@@ -11,7 +11,7 @@ def create_razorpay_order(order):
     amount = int(float(order.total_amount) * 100)
 
     razorpay_order = client.order.create(
-        {"amount": amount, "currency": "INR", "payment_capture": 1}
+        {"amount": amount, "currency": "USD", "payment_capture": 1}
     )
 
     return razorpay_order

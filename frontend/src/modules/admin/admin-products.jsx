@@ -35,7 +35,9 @@ export default function AdminProducts() {
     price: "",
     count: "",
     category: "",
-    imageUrl: "",
+    category: "",
+    image: null, // Main image file
+    uploaded_images: [], // Additional gallery images
     isActive: true,
   });
   const [editingProduct, setEditingProduct] = useState(null);
@@ -89,7 +91,7 @@ export default function AdminProducts() {
   const resetForm = () => {
     setFormData({
       name: "", description: "", price: "", count: "",
-      category: "", imageUrl: "", isActive: true,
+      category: "", image: null, uploaded_images: [], isActive: true,
     });
     setEditingProduct(null);
   };
@@ -101,24 +103,34 @@ export default function AdminProducts() {
   };
 
   const handleAdd = async () => {
-    const { name, price, category, count, imageUrl } = formData;
+    const { name, price, category, count, image, uploaded_images, description } = formData;
     if (!name || !price || !category) {
       toast.warn("Name, Price, and Category are required.");
       return;
     }
+
+    const data = new FormData();
+    data.append("name", name);
+    data.append("price", price);
+    data.append("category", category);
+    data.append("count", count || 0);
+    data.append("description", description);
+    if (image) data.append("image", image);
+    
+    // Append multiple images
+    if (uploaded_images && uploaded_images.length > 0) {
+        Array.from(uploaded_images).forEach((file) => {
+            data.append("uploaded_images", file);
+        });
+    }
+
     try {
-      const newProd = {
-        ...formData,
-        id: Date.now().toString(), // Use a more robust ID in a real app
-        price: parseFloat(price),
-        count: parseInt(count || 0, 10),
-        images: imageUrl ? [imageUrl] : [],
-        created_at: new Date().toISOString(),
-      };
-      await Api.post("/products", newProd);
+      await Api.post("/products/", data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       toast.success(`Product "${name}" added successfully!`);
       closeModal();
-      fetchProducts(); // Refresh data
+      fetchProducts();
     } catch (error) {
       toast.error("Failed to add product.");
       console.error(error);
@@ -127,22 +139,40 @@ export default function AdminProducts() {
 
   const handleUpdate = async () => {
     if (!editingProduct) return;
-    const { name, price, category, count, imageUrl } = editingProduct;
-     if (!name || !price || !category) {
+    const { name, price, category, count, image, uploaded_images, description } = editingProduct;
+    // Note: editingProduct might have 'image' as a URL string if not changed, 
+    // or a File object if changed. The backend should handle this, 
+    // but typically we only send 'image' if it's a new file.
+    
+    if (!name || !price || !category) {
       toast.warn("Name, Price, and Category are required.");
       return;
     }
+
+    const data = new FormData();
+    data.append("name", name);
+    data.append("price", price);
+    data.append("category", category);
+    data.append("count", count || 0);
+    data.append("description", description || "");
+
+    if (image instanceof File) {
+        data.append("image", image);
+    }
+
+    if (uploaded_images && uploaded_images.length > 0) {
+        Array.from(uploaded_images).forEach((file) => {
+            data.append("uploaded_images", file);
+        });
+    }
+
     try {
-      const updated = {
-        ...editingProduct,
-        price: parseFloat(price),
-        count: parseInt(count || 0, 10),
-        images: imageUrl ? [imageUrl] : editingProduct.images || [],
-      };
-      await Api.put(`/products/${editingProduct.id}`, updated);
+      await Api.put(`/products/${editingProduct.id}/`, data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       toast.success(`Product "${name}" updated successfully!`);
       closeModal();
-      fetchProducts(); // Refresh data
+      fetchProducts();
     } catch (error) {
       toast.error("Failed to update product.");
       console.error(error);
@@ -175,7 +205,13 @@ export default function AdminProducts() {
 
   const openModal = (product = null) => {
     if (product) {
-      setEditingProduct({ ...product, imageUrl: product.images?.[0] || "" });
+      // When editing, we initiate with existing data. 
+      // 'image' will be the URL string initially.
+      setEditingProduct({ 
+          ...product, 
+          image: product.image, // Keep existing URL reference
+          uploaded_images: [] // Reset new uploads
+      });
     } else {
       resetForm();
     }
@@ -380,13 +416,30 @@ export default function AdminProducts() {
                         onChange={(e) => setCurrentFormData({ ...currentFormData, count: e.target.value })}
                     />
                  </div>
-                 <FormInput
-                    label="Image URL"
-                    type="text"
-                    placeholder="https://example.com/image.jpg"
-                    value={currentFormData.imageUrl}
-                    onChange={(e) => setCurrentFormData({ ...currentFormData, imageUrl: e.target.value })}
-                />
+                 <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Main Image</label>
+                    <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => setCurrentFormData({ ...currentFormData, image: e.target.files[0] })}
+                        className="w-full px-3 py-2 text-gray-800 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition"
+                    />
+                    {currentFormData.image && typeof currentFormData.image === 'string' && (
+                        <div className="mt-2 text-xs text-gray-500">Current: {currentFormData.image}</div>
+                    )}
+                 </div>
+                 
+                 <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Additional Images (Gallery)</label>
+                    <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={(e) => setCurrentFormData({ ...currentFormData, uploaded_images: e.target.files })}
+                        className="w-full px-3 py-2 text-gray-800 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition"
+                    />
+                    <div className="mt-2 text-xs text-gray-500">Select multiple files to add to gallery.</div>
+                 </div>
                  <div>
                     <label className="block text-sm font-medium text-gray-600 mb-1">Description</label>
                     <textarea
