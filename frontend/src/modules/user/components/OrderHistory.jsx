@@ -78,15 +78,30 @@ export default function OrderHistory({ orders, handleClearOrders, handleCancelOr
               <div className="p-4 space-y-4">
                 {order.items && order.items.map((item) => (
                   <div key={item.id} className="flex items-center space-x-4">
-                    <img
-                      src={
-                        item.product_image
-                          ? `${import.meta.env.VITE_API_URL.replace('/api', '')}${item.product_image}`
-                          : "https://via.placeholder.com/64?text=No+Image"
-                      }
-                      alt={item.product_name || item.name}
-                      className="w-16 h-16 object-cover rounded-md"
-                    />
+                    {(() => {
+                        let imgUrl = "https://via.placeholder.com/64?text=No+Image";
+                        if (item.product_image) {
+                            if (item.product_image.startsWith("http")) {
+                                imgUrl = item.product_image;
+                            } else {
+                                // removing /api from the end if present to get base URL
+                                const baseUrl = import.meta.env.VITE_API_URL.endsWith('/api') 
+                                    ? import.meta.env.VITE_API_URL.slice(0, -4) 
+                                    : import.meta.env.VITE_API_URL;
+                                // ensure leading slash
+                                const path = item.product_image.startsWith("/") ? item.product_image : `/${item.product_image}`;
+                                imgUrl = `${baseUrl}${path}`;
+                            }
+                        }
+                        return (
+                            <img
+                              src={imgUrl}
+                              alt={item.product_name || item.name}
+                              className="w-16 h-16 object-cover rounded-md"
+                              onError={(e) => { e.target.src = "https://via.placeholder.com/64?text=Error"; }} 
+                            />
+                        );
+                    })()}
 
                     <div className="flex-grow">
                       <p className="font-semibold text-white">{item.product_name || item.name}</p>

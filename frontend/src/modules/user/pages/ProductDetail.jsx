@@ -48,7 +48,7 @@ export default function ProductDetail() {
     
   const fetchRelatedProducts = async () => {
     try {
-        const res = await Api.get(`/products/?category=${product.category}`);
+        const res = await Api.get(`/products/?category=${encodeURIComponent(product.category)}`);
         const related = res.data.filter(p => p.id !== product.id).slice(0, 4);
         setRelatedProducts(related);
     } catch (err) {

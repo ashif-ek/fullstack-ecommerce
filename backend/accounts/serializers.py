@@ -67,6 +67,9 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             "username": self.user.username,
             "email": self.user.email,
             "is_staff": self.user.is_staff,
+            "profile_picture": self.user.profile_picture.url
+            if self.user.profile_picture
+            else None,
         }
 
         return data

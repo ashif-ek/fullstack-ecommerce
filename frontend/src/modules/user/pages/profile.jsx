@@ -110,13 +110,20 @@ const handleCancelOrder = async (orderId) => {
     }
 };
 
+  const [userData, setUserData] = useState(user);
+
+  useEffect(() => {
+    setUserData(user);
+  }, [user]);
+
   useEffect(() => {
     if (user?.id) {
       Api.get(`/users/${user.id}/`) 
         .then((res) => {
+          setUserData(res.data);
           setOrders(res.data.orders || []); 
         })
-        .catch((err) => console.error("Error fetching user orders", err));
+        .catch((err) => console.error("Error fetching user data", err));
     }
   }, [user]);
 
@@ -136,8 +143,8 @@ const handleCancelOrder = async (orderId) => {
           <div className="text-center mb-12">
             <div className="relative w-24 h-24 mx-auto mb-4">
               <img 
-                src={user.profile_picture || "https://ui-avatars.com/api/?name=" + user.username} 
-                alt={user.username} 
+                src={userData?.profile_picture || "https://ui-avatars.com/api/?name=" + (userData?.username || "User")} 
+                alt={userData?.username} 
                 className="w-full h-full rounded-full object-cover border-2 border-white/20"
               />
             </div>
