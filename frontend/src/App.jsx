@@ -17,6 +17,7 @@ const Search = lazy(() => import("./modules/user/pages/search"));
 const Checkout = lazy(() => import("./modules/user/pages/checkout"));
 const NotFound = lazy(() => import("./modules/user/pages/notfound"));
 const OurStory = lazy(() => import("./modules/user/pages/ourStory"));
+const ProductDetail = lazy(() => import("./modules/user/pages/ProductDetail"));
 const Contact = lazy(() => import("./modules/user/pages/Contact"));
 const ShippingReturns = lazy(() => import("./modules/user/pages/ShippingReturns"));
 const FAQ = lazy(() => import("./modules/user/pages/FAQ"));
