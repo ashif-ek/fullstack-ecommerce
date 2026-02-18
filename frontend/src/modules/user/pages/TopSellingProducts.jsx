@@ -34,9 +34,13 @@ const TopSellingSkeletonLoader = () => (
 
 const TopProductCard = memo(({ product }) => {
   const getImageUrl = (itm) => {
-    let img = Array.isArray(itm.images) ? itm.images[0] : itm.images || itm.image || "";
+    // If images is an array of objects (from serializer), get .image from first item
+    let img = Array.isArray(itm.images) && itm.images.length > 0 
+        ? (itm.images[0].image || "") 
+        : (itm.image || "");
+
     // If it's a relative path (starts with /), prepend API URL
-    if (img && img.startsWith("/")) {
+    if (img && typeof img === "string" && img.startsWith("/")) {
         return `${import.meta.env.VITE_API_URL}${img}`;
     }
     // If it's already a full URL or empty, return as is
