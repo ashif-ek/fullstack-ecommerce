@@ -3,22 +3,28 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import Api from "../services/api";
-import { toast } from "react-toastify";
+import InlineFeedback from "./InlineFeedback"; // Relative import since Footer is in components/
 
 export default function Footer() {
   const [email, setEmail] = useState("");
+  const [feedback, setFeedback] = useState({ type: "", message: "", isVisible: false });
+  const [loading, setLoading] = useState(false);
 
   const handleSubscribe = async (e) => {
     e.preventDefault();
     if (!email) return;
+    setLoading(true);
+    setFeedback({ isVisible: false, message: "", type: "" });
 
     try {
       await Api.post("/communication/newsletter/", { email });
-      toast.success("Subscribed successfully!");
+      setFeedback({ type: "success", message: "Subscribed successfully!", isVisible: true, duration: 3000 });
       setEmail("");
     } catch (err) {
       console.error("Newsletter error:", err);
-      toast.error("Subscription failed. Try again.");
+      setFeedback({ type: "error", message: "Subscription failed.", isVisible: true });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -85,13 +91,19 @@ export default function Footer() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="bg-gray-900 border border-gray-700 px-4 py-2 text-sm focus:outline-none focus:border-white transition-colors"
+                disabled={loading}
               />
               <button 
                 type="submit" 
-                className="bg-white text-black text-sm py-2 hover:bg-gray-100 transition-colors duration-300 uppercase tracking-widest font-light"
+                className="bg-white text-black text-sm py-2 hover:bg-gray-100 transition-colors duration-300 uppercase tracking-widest font-light disabled:opacity-50"
+                disabled={loading}
               >
-                Subscribe
+                {loading ? "Subscribing..." : "Subscribe"}
               </button>
+              <InlineFeedback 
+                {...feedback} 
+                onClose={() => setFeedback(p => ({ ...p, isVisible: false }))} 
+               />
             </form>
           </div>
         </div>

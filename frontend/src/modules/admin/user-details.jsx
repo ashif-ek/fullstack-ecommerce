@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Api from "../../services/api";
 import { FiArrowLeft, FiMail, FiUser, FiShoppingBag, FiMapPin, FiCreditCard, FiCheckCircle, FiXCircle, FiLoader } from "react-icons/fi";
-import { toast } from "react-toastify";
+import InlineFeedback from "../../components/InlineFeedback";
 
 export default function UserDetails() {
   const { id } = useParams();
@@ -11,16 +11,18 @@ export default function UserDetails() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [activeTab, setActiveTab] = useState("details");
+  const [feedback, setFeedback] = useState({ type: "", message: "", isVisible: false });
 
   useEffect(() => {
     const fetchUser = async () => {
       setLoading(true);
+      setFeedback(prev => ({ ...prev, isVisible: false }));
       try {
         const res = await Api.get(`/admin/users/${id}/`);
         setUser(res.data);
       } catch (err) {
         console.error("Error fetching user:", err);
-        toast.error("Failed to load user details");
+        setFeedback({ type: "error", message: "Failed to load user details", isVisible: true });
       }
       setLoading(false);
     };
@@ -32,15 +34,16 @@ export default function UserDetails() {
   const toggleBlock = async () => {
     if (!user) return;
     setUpdating(true);
+    setFeedback(prev => ({ ...prev, isVisible: false }));
     try {
       const updated = await Api.patch(`/users/${id}`, {
         isBlocked: !user.isBlocked,
       });
       setUser(updated.data);
-      toast.success(`User ${updated.data.isBlocked ? 'blocked' : 'unblocked'} successfully`);
+      setFeedback({ type: "success", message: `User ${updated.data.isBlocked ? 'blocked' : 'unblocked'} successfully`, isVisible: true, duration: 3000 });
     } catch (err) {
       console.error("Error updating block status:", err);
-      toast.error("Failed to update user status");
+      setFeedback({ type: "error", message: "Failed to update user status", isVisible: true });
     }
     setUpdating(false);
   };
@@ -87,6 +90,13 @@ export default function UserDetails() {
           <h2 className="text-2xl font-semibold text-gray-800">User Details</h2>
           <p className="text-sm text-gray-500">Manage user account and view order history</p>
         </div>
+      </div>
+      {/* Feedback */}
+      <div className="mb-4">
+        <InlineFeedback 
+            {...feedback} 
+            onClose={() => setFeedback(prev => ({ ...prev, isVisible: false }))} 
+        />
       </div>
 
       {/* User Summary Card */}

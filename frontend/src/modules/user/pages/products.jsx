@@ -1,5 +1,4 @@
-
-import { toast } from "react-toastify";
+// Removed toast import
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import Api from "../../../services/api";
 import { useCart } from "../../../context/CartContext";
@@ -8,6 +7,7 @@ import Navbar from "../../../components/navbar";
 import Footer from "../../../components/footer";
 import { useAuth } from "../../../context/AuthContext";
 import { Link } from "react-router-dom";
+import InlineFeedback from "../../../components/InlineFeedback"; // Import InlineFeedback
 
 // Constants for pagination
 const PRODUCTS_PER_PAGE = 9;
@@ -77,6 +77,11 @@ export default function Products() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Separate feedback states for Cart and Wishlist
+  const [cartFeedback, setCartFeedback] = useState({ type: "", message: "", isVisible: false });
+  const [wishlistFeedback, setWishlistFeedback] = useState({ type: "", message: "", isVisible: false });
+  const [fetchError, setFetchError] = useState(null);
+
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
@@ -88,6 +93,7 @@ export default function Products() {
   const fetchProducts = useCallback(async () => {
     if (!hasMore) return;
     setLoading(true);
+    setFetchError(null);
     try {
 
       const res = await Api.get(`/products/?page=${page}`);
@@ -114,7 +120,8 @@ export default function Products() {
       }
     } catch (err) {
       console.error("error", err);
-      toast.error("Failed to fetch products.");
+      // Use inline error state instead of toast
+      setFetchError("Failed to load products. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -140,6 +147,9 @@ export default function Products() {
   const openProductModal = useCallback((product) => {
     setSelectedProduct(product);
     setIsModalOpen(true);
+    // Reset feedbacks when opening modal
+    setCartFeedback({ isVisible: false, message: "", type: "" });
+    setWishlistFeedback({ isVisible: false, message: "", type: "" });
     document.body.style.overflow = 'hidden';
   }, []);
 
@@ -155,21 +165,42 @@ export default function Products() {
   }, []);
 
   const handleAddToCart = useCallback(() => {
+    setCartFeedback({ isVisible: false, message: "", type: "" });
     if (!user) {
-      toast.error("Please log in to add items to your cart.");
+      setCartFeedback({ type: "error", message: "Please log in to add items", isVisible: true });
       return;
     }
-    addToCart(selectedProduct.id, 1);
-    toast.success(`${selectedProduct.name} added to cart`);
+    try {
+        addToCart(selectedProduct.id, 1);
+        setCartFeedback({ type: "success", message: "Added to cart", isVisible: true, duration: 2000 });
+    } catch (err) {
+        setCartFeedback({ type: "error", message: "Failed to add", isVisible: true });
+    }
   }, [user, selectedProduct, addToCart]);
   
   const handleAddToWishlist = useCallback(() => {
+    setWishlistFeedback({ isVisible: false, message: "", type: "" });
     if (!user) {
-      toast.error("Please log in to add items to your wishlist.");
+      setWishlistFeedback({ type: "error", message: "Please log in to wishlist", isVisible: true });
       return;
     }
-    addToWishlist(selectedProduct);
-    toast.success(`${selectedProduct.name} added to wishlist!`);
+    const result = addToWishlist(selectedProduct);
+    if (result && result.message) {
+         // Check if it was "Added" or "Already in" based on message content or return type
+         // Assuming generic success for now. logic in wishlist context might vary.
+         // Context implementation: if (exists) toast.info else toast.success
+         // We should update context to return status.
+         // Assuming context returns object { success, message } from my previous edits? 
+         // Checked Context: yes, returns { success: true/false, message: "..." }
+         if (result.success) {
+             setWishlistFeedback({ type: "success", message: result.message, isVisible: true, duration: 2000 });
+         } else {
+             setWishlistFeedback({ type: "info", message: result.message, isVisible: true, duration: 2000 });
+         }
+    } else {
+         // Fallback if context wrapper didn't return
+         setWishlistFeedback({ type: "success", message: "Updated wishlist", isVisible: true });
+    }
   }, [user, selectedProduct, addToWishlist]);
   
   const isAddedToCart = selectedProduct ? cart.some(item => item.id === selectedProduct.id) : false;
@@ -197,6 +228,12 @@ export default function Products() {
             <div className="w-20 h-px bg-white/40 mx-auto"></div>
           </div>
           
+          {fetchError && (
+              <div className="text-center mb-8 p-4 border border-red-500/20 bg-red-500/5 rounded">
+                  <p className="text-red-400">{fetchError}</p>
+              </div>
+          )}
+          
           {loading && products.length === 0 ? (
             <ProductSkeletonLoader />
           ) : (
@@ -222,8 +259,7 @@ export default function Products() {
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
             <div className="relative max-w-4xl w-full max-h-[90vh] overflow-auto bg-gradient-to-br from-gray-900 to-black border border-white/10 rounded-lg">
               <button onClick={closeModal} className="absolute top-4 right-4 z-10 text-white/70 hover:text-white transition-colors">
-                 {/*  THIS IS THE CORRECTED LINE */}
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M6 18L18 6M6 6l12 12"></path></svg>
+                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M6 18L18 6M6 6l12 12"></path></svg>
               </button>
               <div className="grid md:grid-cols-2 gap-8">
                 <div className="h-96 md:h-full">
@@ -244,7 +280,7 @@ export default function Products() {
                   
                   <div className="space-y-4 mt-8">
 
-                    <div className="flex items-center space-x-4">
+                    <div className="flex flex-col items-center space-y-2">
                       {isAddedToCart ? (
                         <Link
                           to="/carts"
@@ -261,8 +297,13 @@ export default function Products() {
                           {selectedProduct.count > 0 ? 'Add to Cart' : 'Save to Cart'}
                         </button>
                       )}
+                      <InlineFeedback 
+                        {...cartFeedback} 
+                        onClose={() => setCartFeedback(p => ({ ...p, isVisible: false }))} 
+                       />
                     </div>
-                    <div className="flex items-center space-x-4">
+
+                    <div className="flex flex-col items-center space-y-2">
                       {isAddedToWishlist ? (
                         <Link
                           to="/whishlist"
@@ -278,6 +319,10 @@ export default function Products() {
                           Save to Wishlist
                         </button>
                       )}
+                       <InlineFeedback 
+                        {...wishlistFeedback} 
+                        onClose={() => setWishlistFeedback(p => ({ ...p, isVisible: false }))} 
+                       />
                     </div>
                   </div>
                 </div>

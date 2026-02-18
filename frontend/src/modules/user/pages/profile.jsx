@@ -6,7 +6,6 @@ import { useAuth } from "../../../context/AuthContext";
 import { useCart } from "../../../context/CartContext";
 import { useWishlist } from "../../../context/WishlistContext";
 import Api from "../../../services/api";
-import { toast } from "react-toastify";
 import Dashboard from "../components/Dashboard";
 import OrderHistory from "../components/OrderHistory";
 import AccountDetails from "../components/AccountDetails";
@@ -26,12 +25,18 @@ export default function Profile() {
       email: user?.email || "",
       profile_picture: null,
   });
+  
+  // Feedback state
+  const [feedback, setFeedback] = useState({ type: "", message: "", isVisible: false });
 
   const handleEditChange = (e) => {
       setEditFormData({ ...editFormData, [e.target.name]: e.target.value });
   };
 
+  const clearFeedback = () => setFeedback({ ...feedback, isVisible: false });
+
   const handleUpdateProfile = async () => {
+      clearFeedback();
       try {
           const data = new FormData();
           data.append("username", editFormData.username);
@@ -43,7 +48,7 @@ export default function Profile() {
           await Api.put(`/users/${user.id}/`, data, {
             headers: { "Content-Type": "multipart/form-data" },
           });
-          toast.success("Profile updated successfully! Refreshing...");
+          setFeedback({ type: "success", message: "Profile updated successfully! Refreshing...", isVisible: true });
           setTimeout(() => window.location.reload(), 1500); 
       } catch (err) {
           console.error("Error updating profile:", err);
@@ -61,7 +66,7 @@ export default function Profile() {
                     .join("\n");
              }
           }
-          toast.error(errorMessage);
+          setFeedback({ type: "error", message: errorMessage, isVisible: true });
       }
   };
 
@@ -97,16 +102,17 @@ const handleClearOrders = async () => {
 
 const handleCancelOrder = async (orderId) => {
     if (!window.confirm("Are you sure you want to cancel this order?")) return;
+    clearFeedback();
 
     try {
         await Api.patch(`/orders/${orderId}/cancel/`);
         // Refresh orders
         const res = await Api.get(`/users/${user.id}/`);
         setOrders(res.data.orders || []);
-        toast.success("Order cancelled successfully.");
+        setFeedback({ type: "success", message: "Order cancelled successfully.", isVisible: true, duration: 3000 });
     } catch (err) {
         console.error("Error cancelling order:", err);
-        toast.error(err.response?.data?.detail || "Failed to cancel order.");
+        setFeedback({ type: "error", message: err.response?.data?.detail || "Failed to cancel order.", isVisible: true });
     }
 };
 
@@ -114,7 +120,9 @@ const handleCancelOrder = async (orderId) => {
 
   useEffect(() => {
     setUserData(user);
-  }, [user]);
+    // Reset feedback when tab changes
+    clearFeedback();
+  }, [user, activeTab]);
 
   useEffect(() => {
     if (user?.id) {
@@ -190,7 +198,9 @@ const handleCancelOrder = async (orderId) => {
                 <OrderHistory 
                     orders={orders} 
                     handleClearOrders={handleClearOrders} 
-                    handleCancelOrder={handleCancelOrder} 
+                    handleCancelOrder={handleCancelOrder}
+                    feedback={feedback}
+                    onFeedbackClose={clearFeedback}
                 />
             )}
 
@@ -203,6 +213,8 @@ const handleCancelOrder = async (orderId) => {
                     editFormData={editFormData}
                     handleEditChange={handleEditChange}
                     handleUpdateProfile={handleUpdateProfile}
+                    feedback={feedback}
+                    onFeedbackClose={clearFeedback}
                 />
             )}
           </div>

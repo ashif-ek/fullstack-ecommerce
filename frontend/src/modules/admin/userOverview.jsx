@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Api from "../../services/api";
-import { toast } from "react-toastify";
 import {
   FiUser,
   FiTrendingUp,
@@ -11,6 +10,7 @@ import {
   FiHeart,
   FiShoppingCart,
 } from "react-icons/fi";
+import InlineFeedback from "../../components/InlineFeedback";
 
 // --- Reusable Summary Card ---
 const SummaryCard = ({ icon, title, value, color }) => {
@@ -42,17 +42,19 @@ export default function UserOverview() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [feedback, setFeedback] = useState({ type: "", message: "", isVisible: false });
 
   useEffect(() => {
     const fetchUsers = async () => {
       setLoading(true);
+      setFeedback(prev => ({ ...prev, isVisible: false }));
       try {
         const res = await Api.get("/admin/users/");
         setUsers(res.data);
         setFilteredUsers(res.data);
       } catch (err) {
         console.error("Error fetching users:", err);
-        toast.error("Failed to load users");
+        setFeedback({ type: "error", message: "Failed to load users", isVisible: true });
       }
       setLoading(false);
     };
@@ -99,6 +101,14 @@ export default function UserOverview() {
         <p className="text-sm text-gray-500 mt-1">
           Monitor, search, and manage all registered users.
         </p>
+      </div>
+      
+      {/* Feedback */}
+      <div className="mb-4">
+        <InlineFeedback 
+            {...feedback} 
+            onClose={() => setFeedback(prev => ({ ...prev, isVisible: false }))} 
+        />
       </div>
 
       {/* Summary Cards */}

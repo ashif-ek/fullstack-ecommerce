@@ -1,13 +1,16 @@
 import { Link, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { toast } from "react-toastify";
+// Removed toast import
 import Api from "../../../services/api";
 import { useCart } from "../../../context/CartContext";
 import { useWishlist } from "../../../context/WishlistContext";
 import Footer from "../../../components/footer";
 import Navbar from "../../../components/navbar";
+// ... (imports remain)
 import ProductDetailSkeleton from "../../../components/ProductDetailSkeleton"; // Import Skeleton
 import { Home, Package, Star, Share2, Heart, ShoppingBag, ArrowRight } from "lucide-react"; 
+import SizingGuideModal from "../components/SizingGuideModal";
+import InlineFeedback from "../../../components/InlineFeedback"; // Import InlineFeedback
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -16,6 +19,14 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(true); // Add loading state
   const { addToCart, cart } = useCart();
   const { addToWishlist, wishlist } = useWishlist();
+
+  // Modal State
+  const [isSizingGuideOpen, setIsSizingGuideOpen] = useState(false);
+
+  // Feedback State
+  const [cartFeedback, setCartFeedback] = useState({ type: "", message: "", isVisible: false });
+  const [wishlistFeedback, setWishlistFeedback] = useState({ type: "", message: "", isVisible: false });
+  const [reviewFeedback, setReviewFeedback] = useState({ type: "", message: "", isVisible: false });
 
   // Review State
   const [reviews, setReviews] = useState([]);
@@ -60,6 +71,30 @@ export default function ProductDetail() {
     setActiveImage(imgUrl);
   };
 
+  // HANDLERS WITH INLINE FEEDBACK
+  const handleAddToCart = async () => {
+    try {
+        await addToCart(product.id);
+        setCartFeedback({ type: "success", message: "Added to cart", isVisible: true });
+    } catch (err) {
+        setCartFeedback({ type: "error", message: "Failed to add to cart", isVisible: true });
+    }
+  };
+
+  const handleAddToWishlist = () => {
+      const result = addToWishlist(product);
+      if (result && result.message) {
+           setWishlistFeedback({ 
+               type: result.success ? "success" : "info", 
+               message: result.message, 
+               isVisible: true 
+           });
+      } else {
+           // Fallback if context wrapper doesn't return result yet
+           setWishlistFeedback({ type: "success", message: "Added to wishlist", isVisible: true });
+      }
+  };
+
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -68,12 +103,12 @@ export default function ProductDetail() {
         product: id,
         ...newReview
       });
-      toast.success("Review submitted successfully!");
+      setReviewFeedback({ type: "success", message: "Review submitted successfully!", isVisible: true });
       setNewReview({ rating: 5, comment: "", title: "" });
       fetchProduct(); 
     } catch (err) {
       console.error("Review submit error:", err);
-      toast.error("Failed to submit review. You might have already reviewed this.");
+      setReviewFeedback({ type: "error", message: "Failed to submit review. You might have already reviewed this.", isVisible: true });
     } finally {
       setSubmitting(false);
     }
@@ -93,6 +128,8 @@ export default function ProductDetail() {
   return (
     <>
       <Navbar />
+
+      <SizingGuideModal isOpen={isSizingGuideOpen} onClose={() => setIsSizingGuideOpen(false)} />
 
       <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
         
@@ -227,54 +264,64 @@ export default function ProductDetail() {
                                     <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                                 </Link>
                             ) : (
-                                <button
-                                    onClick={() => {
-                                         if (product.stock > 0) {
-                                            addToCart(product.id);
-                                         } else {
-                                            addToWishlist(product);
-                                            toast.success("Saved to Wishlist!");
-                                         }
-                                    }}
-                                    disabled={false} 
-                                    className={`w-full py-5 font-semibold uppercase tracking-[0.2em] text-xs transition-all duration-300 flex items-center justify-center gap-3 group ${
-                                        product.stock > 0 
-                                        ? "bg-white text-black hover:bg-gray-200" 
-                                        : "bg-transparent border border-white/20 text-white hover:bg-white/5"
-                                    }`}
-                                >
-                                    {product.stock > 0 ? (
-                                        <>
-                                            <ShoppingBag size={16} /> Add to Cart
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Heart size={16} /> Save to Wishlist
-                                        </>
-                                    )}
-                                </button>
+                                <div>
+                                    <button
+                                        onClick={() => {
+                                             if (product.stock > 0) {
+                                                handleAddToCart();
+                                             } else {
+                                                handleAddToWishlist();
+                                             }
+                                        }}
+                                        disabled={false} 
+                                        className={`w-full py-5 font-semibold uppercase tracking-[0.2em] text-xs transition-all duration-300 flex items-center justify-center gap-3 group ${
+                                            product.stock > 0 
+                                            ? "bg-white text-black hover:bg-gray-200" 
+                                            : "bg-transparent border border-white/20 text-white hover:bg-white/5"
+                                        }`}
+                                    >
+                                        {product.stock > 0 ? (
+                                            <>
+                                                <ShoppingBag size={16} /> Add to Cart
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Heart size={16} /> Save to Wishlist
+                                            </>
+                                        )}
+                                    </button>
+                                    <InlineFeedback 
+                                        {...cartFeedback} 
+                                        onClose={() => setCartFeedback(p => ({ ...p, isVisible: false }))} 
+                                    />
+                                </div>
                             )}
 
-                            <button
-                                onClick={() => {
-                                    if (wishlist.some(item => item.id === product.id)) {
-                                        toast.info("Already in your wishlist");
-                                    } else {
-                                        addToWishlist(product);
-                                        toast.success("Added to Wishlist");
-                                    }
-                                }}
-                                className="w-full py-4 text-gray-500 font-medium uppercase tracking-[0.2em] text-[10px] hover:text-white transition-colors flex items-center justify-center gap-2 group"
-                            >
-                                <Heart size={14} className={`transition-colors group-hover:text-red-500 ${wishlist.some(item => item.id === product.id) ? "fill-white text-white" : ""}`} />
-                                {wishlist.some(item => item.id === product.id) ? "In Wishlist" : "Add to Wishlist"}
-                            </button>
+                            <div>
+                                <button
+                                    onClick={() => {
+                                        if (wishlist.some(item => item.id === product.id)) {
+                                            setWishlistFeedback({ type: "info", message: "Already in wishlist", isVisible: true });
+                                        } else {
+                                            handleAddToWishlist();
+                                        }
+                                    }}
+                                    className="w-full py-4 text-gray-500 font-medium uppercase tracking-[0.2em] text-[10px] hover:text-white transition-colors flex items-center justify-center gap-2 group"
+                                >
+                                    <Heart size={14} className={`transition-colors group-hover:text-red-500 ${wishlist.some(item => item.id === product.id) ? "fill-white text-white" : ""}`} />
+                                    {wishlist.some(item => item.id === product.id) ? "In Wishlist" : "Add to Wishlist"}
+                                </button>
+                                <InlineFeedback 
+                                    {...wishlistFeedback} 
+                                    onClose={() => setWishlistFeedback(p => ({ ...p, isVisible: false }))} 
+                                />
+                            </div>
                         </div>
                         
                         {/* Footer Details */}
                         <div className="pt-8 border-t border-white/5 text-xs text-gray-600 flex gap-8">
-                             <span className="hover:text-gray-400 transition-colors cursor-pointer">Shipping & Returns</span>
-                             <span className="hover:text-gray-400 transition-colors cursor-pointer">Sizing Guide</span>
+                             <Link to="/shipping-returns" className="hover:text-gray-400 transition-colors cursor-pointer">Shipping & Returns</Link>
+                             <span className="hover:text-gray-400 transition-colors cursor-pointer" onClick={() => setIsSizingGuideOpen(true)}>Sizing Guide</span>
                              <span className="hover:text-gray-400 transition-colors cursor-pointer" onClick={() => {
                                  navigator.clipboard.writeText(window.location.href);
                                  toast.success("Link copied!");
@@ -364,13 +411,19 @@ export default function ProductDetail() {
                                     required
                                 />
 
-                                <button
-                                    type="submit"
-                                    disabled={submitting}
-                                    className="w-full bg-white text-black py-4 uppercase tracking-[0.2em] text-[10px] font-bold hover:bg-gray-200 transition-colors"
-                                >
-                                    {submitting ? "Submitting..." : "Post Review"}
-                                </button>
+                                <div className="space-y-4">
+                                    <button
+                                        type="submit"
+                                        disabled={submitting}
+                                        className="w-full bg-white text-black py-4 uppercase tracking-[0.2em] text-[10px] font-bold hover:bg-gray-200 transition-colors"
+                                    >
+                                        {submitting ? "Submitting..." : "Post Review"}
+                                    </button>
+                                    <InlineFeedback 
+                                        {...reviewFeedback} 
+                                        onClose={() => setReviewFeedback(p => ({ ...p, isVisible: false }))} 
+                                    />
+                                </div>
                             </form>
                         </div>
                         

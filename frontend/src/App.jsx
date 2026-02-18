@@ -43,8 +43,6 @@ import { WishlistProvider } from "./context/WishlistContext";
 import { OrderProvider } from "./context/OrderContext";
 import { SearchProvider } from "./context/SearchContext";
 
-import { ToastContainer } from "react-toastify";
-
 // Route Components
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
@@ -63,8 +61,6 @@ function LoadingFallback() {
 function AppWithProviders() {
   return (
     <>
-      <ToastContainer autoClose={2000} theme="dark" hideProgressBar />
-
       <CartProvider>
         <WishlistProvider>
           <OrderProvider>

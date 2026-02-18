@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+// Removed toast import
 
 import { useCart } from "../../../context/CartContext";
 import { useOrders } from "../../../context/OrderContext";
@@ -9,6 +9,7 @@ import { useAuth } from "../../../context/AuthContext";
 import Navbar from "../../../components/navbar";
 import Footer from "../../../components/footer";
 import Api from "../../../services/api";
+import InlineFeedback from "../../../components/InlineFeedback"; // Import InlineFeedback
 
 /* =========================
    UI HELPERS
@@ -59,6 +60,9 @@ export default function Checkout() {
     country: "",
   });
 
+  // Feedback State
+  const [formFeedback, setFormFeedback] = useState({ type: "", message: "", isVisible: false });
+
   useEffect(() => {
     if (user?.username) {
       setShippingDetails((p) => ({
@@ -79,12 +83,13 @@ export default function Checkout() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormFeedback({ isVisible: false, message: "", type: "" }); // Reset feedback
 
     if (isProcessing) return;
 
     const { fullName, address, city, postalCode, country } = shippingDetails;
     if (!fullName || !address || !city || !postalCode || !country) {
-      toast.warn("Please fill all fields");
+      setFormFeedback({ type: "error", message: "Please fill all fields", isVisible: true });
       return;
     }
 
@@ -102,18 +107,21 @@ export default function Checkout() {
         try {
            await Api.post('/payments/verify/', { order_id: order.id });
            clearCart();
-           toast.success("Payment successful");
+           // Redirect is enough, but could show success briefly if redirection wasn't immediate
            navigate("/profile");
         } catch (err) {
            console.error(err);
-           toast.error("Payment verification failed");
+           setFormFeedback({ type: "error", message: "Payment verification failed. Please contact support.", isVisible: true });
         }
       };
 
-      openRazorpay(data, handleSuccess);
+      // Wrap openRazorpay with error handling for the cancel callback if desired
+      openRazorpay(data, handleSuccess, (msg) => {
+          setFormFeedback({ type: "info", message: msg || "Payment cancelled", isVisible: true });
+      });
     } catch (err) {
       console.error("Checkout error:", err);
-      toast.error("Payment initialization failed");
+      setFormFeedback({ type: "error", message: "Payment initialization failed. Please try again.", isVisible: true });
     }
   };
 
@@ -143,14 +151,20 @@ export default function Checkout() {
                 <InputField name="country" label="Country" value={shippingDetails.country} onChange={handleChange} />
               </FormSection>
 
-              <button
-                disabled={isProcessing}
-                type="submit"
-                className="w-full bg-white text-black tracking-widest uppercase
-                           px-6 py-4 hover:bg-gray-200 transition rounded-md disabled:opacity-60"
-              >
-                {isProcessing ? "Processing..." : "Proceed to Payment"}
-              </button>
+              <div>
+                <button
+                    disabled={isProcessing}
+                    type="submit"
+                    className="w-full bg-white text-black tracking-widest uppercase
+                            px-6 py-4 hover:bg-gray-200 transition rounded-md disabled:opacity-60"
+                >
+                    {isProcessing ? "Processing..." : "Proceed to Payment"}
+                </button>
+                <InlineFeedback 
+                    {...formFeedback} 
+                    onClose={() => setFormFeedback(p => ({ ...p, isVisible: false }))} 
+                />
+              </div>
             </form>
 
             {/* SUMMARY */}
@@ -186,9 +200,9 @@ export default function Checkout() {
    RAZORPAY SAFE OPEN
 ========================= */
 
-function openRazorpay(data, onSuccess) {
+function openRazorpay(data, onSuccess, onDismiss) {
   if (!window.Razorpay) {
-    toast.error("Payment system not loaded");
+    if (onDismiss) onDismiss("Payment system not loaded");
     return;
   }
 
@@ -204,7 +218,7 @@ function openRazorpay(data, onSuccess) {
     },
     modal: {
       ondismiss: () => {
-        toast.info("Payment cancelled");
+        if (onDismiss) onDismiss("Payment cancelled");
       },
     },
     theme: { color: "#000000" },

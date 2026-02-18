@@ -1,10 +1,14 @@
+import InlineFeedback from "../../../components/InlineFeedback";
+
 export default function AccountDetails({ 
   user, 
   isEditing, 
   setIsEditing, 
   editFormData, 
   handleEditChange, 
-  handleUpdateProfile 
+  handleUpdateProfile,
+  feedback,        // New prop
+  onFeedbackClose  // New prop
 }) {
   return (
     <div className="max-w-md mx-auto space-y-6">
@@ -46,13 +50,6 @@ export default function AccountDetails({
               className="w-full bg-transparent border-b border-white/20 p-2 mt-1 text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-white file:text-black hover:file:bg-gray-200"
               onChange={(e) => {
                 if (e.target.files?.[0]) {
-                  // We need to pass this up to parent state
-                  // Since handleEditChange expects an event with name/value, we might need a custom handler or mock event
-                  // But direct state setter in parent would be cleaner. 
-                  // For now, let's call handleEditChange with a mock event object or add a specific prop.
-                  // BETTER: Let's assume the parent passed a setEditFormData or specific handler. 
-                  // But sticking to existing props: let's invoke a new prop 'handleImageChange' if it existed.
-                  // Since it doesn't, let's mock the event structure the parent expects:
                    const mockEvent = {
                        target: {
                            name: "profile_picture",
@@ -66,9 +63,9 @@ export default function AccountDetails({
           )}
         </div>
       </div>
-      <div className="text-center pt-4 flex gap-4 justify-center">
+      <div className="text-center pt-4 flex flex-col items-center gap-4">
         {isEditing ? (
-          <>
+          <div className="flex gap-4">
             <button
               onClick={handleUpdateProfile}
               className="bg-white text-black text-sm tracking-widest uppercase px-6 py-3 hover:bg-gray-200 transition-colors"
@@ -78,12 +75,13 @@ export default function AccountDetails({
             <button
               onClick={() => {
                 setIsEditing(false);
+                if (onFeedbackClose) onFeedbackClose();
               }}
               className="border border-white/20 text-gray-400 text-sm tracking-widest uppercase px-6 py-3 hover:border-white hover:text-white transition-colors"
             >
               Cancel
             </button>
-          </>
+          </div>
         ) : (
           <button
             onClick={() => setIsEditing(true)}
@@ -91,6 +89,13 @@ export default function AccountDetails({
           >
             Edit Details
           </button>
+        )}
+        
+        {/* Render Inline Feedback here */}
+        {feedback && (
+            <div className="w-full">
+                <InlineFeedback {...feedback} onClose={onFeedbackClose} />
+            </div>
         )}
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { toast } from "react-toastify";
+// Removed toast import
 import React, { useEffect, useState, memo } from "react";
 import Api from "../../../services/api";
 import { Link } from "react-router-dom";

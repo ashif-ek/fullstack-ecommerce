@@ -5,7 +5,7 @@ import {
   useCallback,
   useMemo,
 } from "react";
-import { toast } from "react-toastify";
+// Removed toast import
 
 const WishlistContext = createContext();
 
@@ -38,9 +38,12 @@ export function WishlistProvider({ children }) {
   const [state, dispatch] = useReducer(wishlistReducer, initialState);
 
   const addToWishlist = useCallback((product) => {
+    if (state.wishlist.some(item => item.id === product.id)) {
+        return { success: false, message: "Already in wishlist" };
+    }
     dispatch({ type: "ADD", payload: product });
-    toast.success("Added to wishlist");
-  }, []);
+    return { success: true, message: "Added to wishlist" };
+  }, [state.wishlist]);
 
   const removeFromWishlist = useCallback((productId) => {
     dispatch({ type: "REMOVE", payload: productId });

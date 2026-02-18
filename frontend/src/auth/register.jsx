@@ -1,28 +1,34 @@
-import { toast } from "react-toastify";
 import { useState } from "react";
+// Removed toast import
 import { useNavigate, Link } from "react-router-dom";
 import Api from "../services/api";
+import InlineFeedback from "../components/InlineFeedback"; // Import InlineFeedback
 
 export default function Register() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [feedback, setFeedback] = useState({ type: "", message: "", isVisible: false });
+  const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFeedback({ isVisible: false, message: "", type: "" });
 
     if (!username || !email || !password) {
-      toast.warn("All fields are required");
+      setFeedback({ type: "error", message: "All fields are required", isVisible: true });
       return;
     }
 
     if (password !== confirmPassword) {
-      toast.warn("Passwords do not match");
+      setFeedback({ type: "error", message: "Passwords do not match", isVisible: true });
       return;
     }
+
+    setIsLoading(true);
 
     try {
       await Api.post("/auth/register/", {
@@ -31,8 +37,11 @@ export default function Register() {
         password,
       });
 
-      toast.success("Account created. Please login.");
-      navigate("/login", { replace: true });
+      setFeedback({ type: "success", message: "Account created. Redirecting to login...", isVisible: true });
+      setTimeout(() => {
+        navigate("/login", { replace: true });
+      }, 1500);
+
     } catch (err) {
       console.error("Register error:", err);
       
@@ -55,7 +64,9 @@ export default function Register() {
         }
       }
 
-      toast.error(errorMessage, { autoClose: 5000 });
+      setFeedback({ type: "error", message: errorMessage, isVisible: true });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -68,52 +79,66 @@ export default function Register() {
         >
           <h1 className="text-3xl text-center">Create Account</h1>
 
-          <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded"
-          />
+          <div className="space-y-4">
+              <input
+                type="text"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded focus:outline-none focus:border-white/30 transition-colors"
+                disabled={isLoading}
+              />
 
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded"
-          />
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded focus:outline-none focus:border-white/30 transition-colors"
+                disabled={isLoading}
+              />
 
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded"
-          />
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded focus:outline-none focus:border-white/30 transition-colors"
+                disabled={isLoading}
+              />
 
-          <input
-            type="password"
-            placeholder="Confirm Password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded"
-          />
+              <input
+                type="password"
+                placeholder="Confirm Password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded focus:outline-none focus:border-white/30 transition-colors"
+                disabled={isLoading}
+              />
+          </div>
 
-          <button
-            type="submit"
-            className="w-full py-3 bg-white text-black font-semibold"
-          >
-            Register
-          </button>
+          <div className="space-y-4">
+              <button
+                type="submit"
+                className="w-full py-3 bg-white text-black font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50"
+                disabled={isLoading}
+              >
+                {isLoading ? "Creating Account..." : "Register"}
+              </button>
+              
+              <InlineFeedback 
+                  {...feedback} 
+                  onClose={() => setFeedback(prev => ({ ...prev, isVisible: false }))} 
+              />
+          </div>
 
           <div className="text-center text-sm text-gray-400">
             Already have an account?{" "}
-            <Link to="/login" className="hover:text-white">
+            <Link to="/login" className="hover:text-white transition-colors">
               Sign In
             </Link>
           </div>

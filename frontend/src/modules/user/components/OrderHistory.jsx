@@ -1,16 +1,25 @@
-export default function OrderHistory({ orders, handleClearOrders, handleCancelOrder }) {
+import InlineFeedback from "../../../components/InlineFeedback";
+
+export default function OrderHistory({ orders, handleClearOrders, handleCancelOrder, feedback, onFeedbackClose }) {
   return (
     <>
-      {orders.length > 0 && (
-        <div className="text-center mb-8">
+      <div className="text-center mb-8 space-y-4">
+        {orders.length > 0 && (
           <button
             onClick={handleClearOrders}
             className="border border-red-500/50 text-red-500 px-6 py-2 text-xs tracking-widest uppercase hover:bg-red-500/20 transition-colors"
           >
             Clear Order History
           </button>
-        </div>
-      )}
+        )}
+        
+        {/* Order Feedback */}
+        {feedback && (
+             <div className="max-w-md mx-auto">
+                 <InlineFeedback {...feedback} onClose={onFeedbackClose} />
+             </div>
+        )}
+      </div>
 
       <div className="space-y-8">
         {orders.length === 0 ? (

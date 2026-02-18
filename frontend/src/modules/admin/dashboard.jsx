@@ -3,11 +3,13 @@ import {LineChart,Line,XAxis,YAxis,Tooltip,BarChart,Bar,PieChart,Pie,Cell,Respon
 import Api from "../../services/api";
 import {  FiBox,  FiUsers,  FiShoppingBag,  FiSearch,  FiBell,  FiUser,  FiTrendingUp,  FiDollarSign,  FiCalendar,} from "react-icons/fi";
 import dayjs from "dayjs"; 
+import InlineFeedback from "../../components/InlineFeedback";
 
 export default function AdminDashboard() {
   const [products, setProducts] = useState([]);
   const [users, setUsers] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [feedback, setFeedback] = useState({ type: "", message: "", isVisible: false });
 
 const normalizeOrders = (rawOrders) =>
   rawOrders.map((o, idx) => ({
@@ -25,6 +27,7 @@ const normalizeOrders = (rawOrders) =>
 
   useEffect(() => {
     const fetchData = async () => {
+      setFeedback(prev => ({ ...prev, isVisible: false }));
       try {
         const resProducts = await Api.get("/admin/products/");
         setProducts(resProducts.data);
@@ -37,6 +40,7 @@ const normalizeOrders = (rawOrders) =>
         setOrders(normalizeOrders(resOrders.data));
       } catch (error) {
         console.error("Dashboard fetch error:", error);
+        setFeedback({ type: "error", message: "Dashboard fetch error", isVisible: true });
       }
     };
 
@@ -125,7 +129,31 @@ const normalizeOrders = (rawOrders) =>
         </header>
 
         <div className="p-6">
-          <h2 className="text-2xl font-bold mb-6">Dashboard Overview</h2>
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800">Dashboard Overview</h2>
+          <p className="text-sm text-gray-500 mt-1">
+            Welcome back, Admin. Here's what's happening today.
+          </p>
+        </div>
+        <div className="mt-4 md:mt-0 flex items-center gap-3">
+          <div className="bg-white p-2 rounded-lg shadow-sm border border-gray-200 text-sm text-gray-600 flex items-center gap-2">
+            <FiCalendar />
+            <span>{dayjs().format("MMMM D, YYYY")}</span>
+          </div>
+          <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm">
+            Download Report
+          </button>
+        </div>
+      </div>
+      
+       {/* Feedback */}
+       <div className="mb-4">
+            <InlineFeedback 
+                {...feedback} 
+                onClose={() => setFeedback(prev => ({ ...prev, isVisible: false }))} 
+            />
+       </div>
 
           {/* KPI Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">

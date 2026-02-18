@@ -3,7 +3,6 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -11,11 +10,11 @@
     "preview": "vite preview",
     "start": "npm run dev"
   },
-
   "dependencies": {
     "@tailwindcss/vite": "^4.1.12",
     "axios": "^1.11.0",
     "dayjs": "^1.11.18",
+    "framer-motion": "^12.34.2",
     "lucide-react": "^0.544.0",
     "path": "^0.12.7",
     "react": "^19.1.1",
@@ -26,7 +25,6 @@
     "recharts": "^3.2.0",
     "vite-plugin-pwa": "^1.1.0"
   },
-
   "devDependencies": {
     "@eslint/js": "^9.33.0",
     "@tailwindcss/postcss": "^4.1.14",

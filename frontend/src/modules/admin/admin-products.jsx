@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import Api from "../../services/api"; // Assuming your API setup is correct
-import { toast } from "react-toastify";
 import { 
   FiEdit, 
   FiTrash2, 
@@ -12,6 +11,7 @@ import {
   FiToggleRight,
   FiX
 } from "react-icons/fi";
+import InlineFeedback from "../../components/InlineFeedback";
 
 // A simple, reusable component for form fields to reduce repetition
 const FormInput = ({ label, value, onChange, ...props }) => (
@@ -43,12 +43,17 @@ export default function AdminProducts() {
   const [filters, setFilters] = useState({ search: "", category: "all", status: "all" });
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  
+  // Feedback states
+  const [feedback, setFeedback] = useState({ type: "", message: "", isVisible: false });
+  const [modalFeedback, setModalFeedback] = useState({ type: "", message: "", isVisible: false });
 
   // --- Core Logic (Fetching, Filtering, CRUD) ---
   // This logic is mostly the same, as it was already well-structured.
 
   const fetchProducts = async () => {
     setLoading(true);
+    setFeedback(prev => ({ ...prev, isVisible: false }));
     try {
       const { data } = await Api.get("/admin/products/");
       // Add a fallback for images to avoid errors
@@ -56,7 +61,7 @@ export default function AdminProducts() {
       setProducts(productsWithImages);
       setFilteredProducts(productsWithImages);
     } catch (error) {
-      toast.error("Failed to fetch products.");
+      setFeedback({ type: "error", message: "Failed to fetch products.", isVisible: true });
       console.error(error);
     } finally {
       setLoading(false);
@@ -93,6 +98,7 @@ export default function AdminProducts() {
       category: "", image: null, uploaded_images: [], isActive: true,
     });
     setEditingProduct(null);
+    setModalFeedback({ type: "", message: "", isVisible: false });
   };
 
   const handleFormSubmit = async (e) => {
@@ -102,9 +108,10 @@ export default function AdminProducts() {
   };
 
   const handleAdd = async () => {
+    setModalFeedback(prev => ({ ...prev, isVisible: false }));
     const { name, price, category, count, image, uploaded_images, description } = formData;
     if (!name || !price || !category) {
-      toast.warn("Name, Price, and Category are required.");
+      setModalFeedback({ type: "error", message: "Name, Price, and Category are required.", isVisible: true });
       return;
     }
 
@@ -127,16 +134,17 @@ export default function AdminProducts() {
       await Api.post("/products/", data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      toast.success(`Product "${name}" added successfully!`);
+      setFeedback({ type: "success", message: `Product "${name}" added successfully!`, isVisible: true, duration: 3000 });
       closeModal();
       fetchProducts();
     } catch (error) {
-      toast.error("Failed to add product.");
+      setModalFeedback({ type: "error", message: "Failed to add product.", isVisible: true });
       console.error(error);
     }
   };
 
   const handleUpdate = async () => {
+    setModalFeedback(prev => ({ ...prev, isVisible: false }));
     if (!editingProduct) return;
     const { name, price, category, count, image, uploaded_images, description } = editingProduct;
     // Note: editingProduct might have 'image' as a URL string if not changed, 
@@ -144,7 +152,7 @@ export default function AdminProducts() {
     // but typically we only send 'image' if it's a new file.
     
     if (!name || !price || !category) {
-      toast.warn("Name, Price, and Category are required.");
+      setModalFeedback({ type: "error", message: "Name, Price, and Category are required.", isVisible: true });
       return;
     }
 
@@ -169,35 +177,37 @@ export default function AdminProducts() {
       await Api.put(`/products/${editingProduct.id}/`, data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      toast.success(`Product "${name}" updated successfully!`);
+      setFeedback({ type: "success", message: `Product "${name}" updated successfully!`, isVisible: true, duration: 3000 });
       closeModal();
       fetchProducts();
     } catch (error) {
-      toast.error("Failed to update product.");
+      setModalFeedback({ type: "error", message: "Failed to update product.", isVisible: true });
       console.error(error);
     }
   };
 
   const handleDelete = async (id, name) => {
     if (!window.confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) return;
+    setFeedback(prev => ({ ...prev, isVisible: false }));
     try {
       await Api.delete(`/admin/products/${id}/`);
-      toast.success(`Product "${name}" deleted.`);
+      setFeedback({ type: "success", message: `Product "${name}" deleted.`, isVisible: true, duration: 3000 });
       fetchProducts(); // Refresh data
     } catch (error) {
-      toast.error("Failed to delete product.");
+      setFeedback({ type: "error", message: "Failed to delete product.", isVisible: true });
       console.error(error);
     }
   };
   
   const toggleStatus = async (product) => {
+    setFeedback(prev => ({ ...prev, isVisible: false }));
     try {
       const updated = { ...product, isActive: !product.isActive };
       await Api.put(`/admin/products/${product.id}/`, updated);
-      toast.success(`Product "${product.name}" has been ${updated.isActive ? "activated" : "deactivated"}.`);
+      setFeedback({ type: "success", message: `Product "${product.name}" has been ${updated.isActive ? "activated" : "deactivated"}.`, isVisible: true, duration: 3000 });
       fetchProducts(); // Refresh data
     } catch (error) {
-      toast.error("Failed to update status.");
+      setFeedback({ type: "error", message: "Failed to update status.", isVisible: true });
       console.error(error);
     }
   };
@@ -242,6 +252,14 @@ export default function AdminProducts() {
           <FiPlus className="text-lg" /> Add New Product
         </button>
       </div>
+      
+       {/* Global Feedback */}
+       <div className="mb-4">
+            <InlineFeedback 
+                {...feedback} 
+                onClose={() => setFeedback(prev => ({ ...prev, isVisible: false }))} 
+            />
+       </div>
 
       {/* Filters & Actions Toolbar */}
       <div className="bg-white rounded-xl shadow-sm p-4 mb-6 flex flex-col md:flex-row items-center gap-4">
@@ -375,6 +393,15 @@ export default function AdminProducts() {
                 <FiX size={24} />
               </button>
             </div>
+            
+            {/* Modal Feedback */}
+            <div className="px-6 pt-4">
+                <InlineFeedback 
+                    {...modalFeedback} 
+                    onClose={() => setModalFeedback(prev => ({ ...prev, isVisible: false }))} 
+                />
+            </div>
+
             <form onSubmit={handleFormSubmit}>
               <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -8,7 +8,7 @@ import {
 } from "react";
 import { useAuth } from "./AuthContext";
 import Api from "../services/api";
-import { toast } from "react-toastify";
+// Removed toast import
 
 const CartContext = createContext();
 
@@ -84,11 +84,11 @@ export function CartProvider({ children }) {
         type: "SET_CART",
         payload: normalizeCart(res.data.items || []),
       });
-
-      toast.success("Added to cart");
+      // Removed toast.success
     } catch (err) {
       console.error("Add to cart error:", err);
-      toast.error("Failed to add to cart");
+      // Removed toast.error
+      throw err; // Re-throw to let component handle feedback
     }
   }, []);
 
@@ -116,7 +116,8 @@ export function CartProvider({ children }) {
       });
     } catch (err) {
       console.error("Update quantity error:", err);
-      toast.error("Failed to update quantity");
+      // Removed toast.error
+      throw err;
     }
   }, []);
 
@@ -137,7 +138,8 @@ export function CartProvider({ children }) {
       });
     } catch (err) {
       console.error("Remove item error:", err);
-      toast.error("Failed to remove item");
+      // Removed toast.error
+      throw err;
     }
   }, []);
 
@@ -149,7 +151,8 @@ export function CartProvider({ children }) {
       dispatch({ type: "CLEAR_CART" });
     } catch (err) {
       console.error("Clear cart error:", err);
-      toast.error("Failed to clear cart");
+      // Removed toast.error
+      throw err;
     }
   }, []);
 

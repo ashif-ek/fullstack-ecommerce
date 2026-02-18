@@ -1,7 +1,7 @@
 import { createContext, useContext, useReducer, useCallback, useMemo } from "react";
 import { useAuth } from "./AuthContext";
 import Api from "../services/api";
-import { toast } from "react-toastify";
+// Removed toast import
 
 const OrderContext = createContext(null);
 
@@ -26,7 +26,7 @@ function reducer(state, action) {
 export function OrderProvider({ children }) {
   const { user } = useAuth();
   const [state, dispatch] = useReducer(reducer, initialState);
-
+  
   const createOrder = useCallback(
     async (shippingDetails, totalAmount) => {
       if (!user) throw new Error("Not authenticated");
@@ -51,7 +51,7 @@ ${shippingDetails.country}`.trim(),
         return res.data;
       } catch (err) {
         dispatch({ type: "FAIL", payload: err.message });
-        toast.error("Order creation failed");
+        // Removed toast.error
         throw err;
       }
     },

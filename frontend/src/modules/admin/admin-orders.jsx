@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import Api from "../../services/api";
-import { toast } from "react-toastify";
 import dayjs from "dayjs";
 import { FiSearch, FiPackage, FiTruck, FiCheckCircle, FiXCircle, FiClock, FiEye, FiEdit } from "react-icons/fi";
+import InlineFeedback from "../../components/InlineFeedback";
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
@@ -11,9 +11,11 @@ export default function AdminOrders() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedOrder, setSelectedOrder] = useState(null); // For detail modal (if needed later)
+  const [feedback, setFeedback] = useState({ type: "", message: "", isVisible: false }); // Feedback state
   
   const fetchOrders = async () => {
     setLoading(true);
+    setFeedback(prev => ({ ...prev, isVisible: false }));
     try {
       // Fetch from the new backend endpoint
       const { data } = await Api.get("/orders/");
@@ -23,7 +25,7 @@ export default function AdminOrders() {
       setFilteredOrders(data);
     } catch (error) {
       console.error("Failed to fetch orders:", error);
-      toast.error("Failed to fetch orders.");
+      setFeedback({ type: "error", message: "Failed to fetch orders.", isVisible: true });
     } finally {
       setLoading(false);
     }
@@ -52,16 +54,19 @@ export default function AdminOrders() {
   }, [search, statusFilter, orders]);
 
   const handleStatusChange = async (orderId, newStatus) => {
+    setFeedback({ isVisible: false, message: "", type: "" });
     try {
       await Api.put(`/admin/orders/${orderId}/`, { status: newStatus });
-      toast.success(`Order #${orderId} marked as ${newStatus}`);
+      setFeedback({ type: "success", message: `Order #${orderId} marked as ${newStatus}`, isVisible: true, duration: 3000 });
       fetchOrders(); // Refresh list
     } catch (error) {
       console.error("Failed to update status:", error);
-      toast.error("Failed to update order status.");
+      setFeedback({ type: "error", message: "Failed to update order status.", isVisible: true });
     }
   };
   
+  const updateStatus = handleStatusChange; // Alias for the dropdown call
+
   const getStatusColor = (status) => {
     switch (status.toLowerCase()) {
       case "pending": return "bg-yellow-100 text-yellow-800";
@@ -82,6 +87,14 @@ export default function AdminOrders() {
           <p className="text-sm text-gray-500 mt-1">View and manage customer orders.</p>
         </div>
       </div>
+      
+       {/* Feedback */}
+       <div className="mb-4">
+            <InlineFeedback 
+                {...feedback} 
+                onClose={() => setFeedback(prev => ({ ...prev, isVisible: false }))} 
+            />
+       </div>
 
        {/* Filters */}
        <div className="bg-white rounded-xl shadow-sm p-4 mb-6 flex flex-col md:flex-row items-center gap-4">

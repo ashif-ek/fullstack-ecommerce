@@ -2,7 +2,7 @@ import { useState } from "react";
 import Navbar from "../../../components/navbar";
 import Footer from "../../../components/footer";
 import Api from "../../../services/api";
-import { toast } from "react-toastify";
+import InlineFeedback from "../../../components/InlineFeedback"; // Import InlineFeedback
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -12,6 +12,7 @@ export default function Contact() {
     message: "",
   });
   const [loading, setLoading] = useState(false);
+  const [feedback, setFeedback] = useState({ type: "", message: "", isVisible: false });
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -20,14 +21,15 @@ export default function Contact() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setFeedback({ isVisible: false, message: "", type: "" });
 
     try {
       await Api.post("/communication/contact/", formData);
-      toast.success("Message sent successfully! We will get back to you soon.");
+      setFeedback({ type: "success", message: "Message sent successfully!", isVisible: true, duration: 3000 });
       setFormData({ name: "", email: "", subject: "", message: "" });
     } catch (err) {
       console.error("Error sending message:", err);
-      toast.error("Failed to send message. Please try again later.");
+      setFeedback({ type: "error", message: "Failed to send message.", isVisible: true });
     } finally {
       setLoading(false);
     }
@@ -109,13 +111,20 @@ export default function Contact() {
                   className="w-full bg-gray-900/50 border border-white/10 p-3 text-white focus:border-white transition-colors outline-none resize-none"
                 ></textarea>
               </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-white text-black py-3 uppercase tracking-widest hover:bg-gray-200 transition-colors disabled:opacity-50"
-              >
-                {loading ? "Sending..." : "Send Message"}
-              </button>
+              
+              <div className="space-y-4">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-white text-black py-3 uppercase tracking-widest hover:bg-gray-200 transition-colors disabled:opacity-50"
+                  >
+                    {loading ? "Sending..." : "Send Message"}
+                  </button>
+                   <InlineFeedback 
+                    {...feedback} 
+                    onClose={() => setFeedback(p => ({ ...p, isVisible: false }))} 
+                   />
+              </div>
             </form>
           </div>
         </div>

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Api from "../../services/api";
 import { FiUser, FiMail, FiCalendar, FiSearch, FiFilter, FiEye, FiPlus, FiLoader } from "react-icons/fi";
-import { toast } from "react-toastify";
+import InlineFeedback from "../../components/InlineFeedback";
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
@@ -12,10 +12,12 @@ export default function AdminUsers() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [roleFilter, setRoleFilter] = useState("all");
+  const [feedback, setFeedback] = useState({ type: "", message: "", isVisible: false }); // Feedback state
 
   useEffect(() => {
     const fetchUsers = async () => {
       setLoading(true);
+      setFeedback(prev => ({ ...prev, isVisible: false }));
       try {
         const res = await Api.get("/admin/users/");
         // Pagination disabled for admin views, so result is always array
@@ -23,7 +25,7 @@ export default function AdminUsers() {
         setFilteredUsers(res.data);
       } catch (error) {
         console.error("Error fetching users:", error);
-        toast.error("Failed to load users");
+        setFeedback({ type: "error", message: "Failed to load users", isVisible: true });
       }
       setLoading(false);
     };
@@ -64,8 +66,16 @@ export default function AdminUsers() {
         </div>
  
       </div>
+      
+      {/* Feedback */}
+      <div className="mb-4">
+        <InlineFeedback 
+            {...feedback} 
+            onClose={() => setFeedback(prev => ({ ...prev, isVisible: false }))} 
+        />
+      </div>
 
-      {/* Filters and Search */}
+      {/* Filters & Actions */}
       <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="relative">
