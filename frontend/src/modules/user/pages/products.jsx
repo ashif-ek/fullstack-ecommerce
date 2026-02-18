@@ -12,30 +12,14 @@ import { Link } from "react-router-dom";
 // Constants for pagination
 const PRODUCTS_PER_PAGE = 9;
 
+import ProductCardSkeleton from "../../../components/ProductCardSkeleton";
+
 // --- Skeleton Loader Components ---
-const SkeletonCard = () => (
-  <div className="bg-gradient-to-b from-gray-900 to-black rounded-lg overflow-hidden">
-    <div className="h-80 bg-white/5 relative overflow-hidden">
-      <div className="absolute inset-0 transform -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-    </div>
-    <div className="p-6 space-y-4">
-      <div className="h-6 w-3/4 bg-white/5 rounded relative overflow-hidden">
-        <div className="absolute inset-0 transform -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-      </div>
-      <div className="h-4 w-1/2 bg-white/5 rounded relative overflow-hidden">
-        <div className="absolute inset-0 transform -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-      </div>
-      <div className="h-6 w-1/4 bg-white/5 rounded relative overflow-hidden">
-        <div className="absolute inset-0 transform -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-      </div>
-    </div>
-  </div>
-);
 
 const ProductSkeletonLoader = () => (
   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
     {Array.from({ length: PRODUCTS_PER_PAGE }).map((_, index) => (
-      <SkeletonCard key={index} />
+      <ProductCardSkeleton key={index} />
     ))}
   </div>
 );

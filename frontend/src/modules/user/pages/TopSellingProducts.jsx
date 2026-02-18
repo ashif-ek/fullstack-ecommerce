@@ -2,48 +2,18 @@ import { toast } from "react-toastify";
 import React, { useEffect, useState, memo } from "react";
 import Api from "../../../services/api";
 import { Link } from "react-router-dom";
+import ProductCardSkeleton from "../../../components/ProductCardSkeleton";
+import { ArrowRight } from "lucide-react";
 
-// const TOP_PRODUCTS_LIMIT = 4; // Managed by backend now or default
-
-/* ===============================
-   Skeleton Loaders (UNCHANGED)
-================================ */
-
-const SkeletonCard = () => (
-  <div className="bg-gradient-to-b from-gray-900 to-black rounded-lg overflow-hidden">
-    <div className="h-80 bg-white/5 relative overflow-hidden" />
-    <div className="p-6 space-y-4">
-      <div className="h-6 w-3/4 bg-white/5 rounded" />
-      <div className="h-4 w-1/2 bg-white/5 rounded" />
-      <div className="h-6 w-1/4 bg-white/5 rounded" />
-    </div>
-  </div>
-);
-
-const TopSellingSkeletonLoader = () => (
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-    {Array.from({ length: 4 }).map((_, i) => (
-      <SkeletonCard key={i} />
-    ))}
-  </div>
-);
-
-/* ===============================
-   Product Card (UNCHANGED UI)
-================================ */
-
-const TopProductCard = memo(({ product }) => {
+const TopProductCard = memo(({ product, index }) => {
   const getImageUrl = (itm) => {
-    // If images is an array of objects (from serializer), get .image from first item
     let img = Array.isArray(itm.images) && itm.images.length > 0 
         ? (itm.images[0].image || "") 
         : (itm.image || "");
 
-    // If it's a relative path (starts with /), prepend API URL
     if (img && typeof img === "string" && img.startsWith("/")) {
         return `${import.meta.env.VITE_API_URL}${img}`;
     }
-    // If it's already a full URL or empty, return as is
     return img;
   };
     
@@ -52,41 +22,45 @@ const TopProductCard = memo(({ product }) => {
   return (
     <Link
       to={`/products/${product.id}`}
-      className="group relative bg-gradient-to-b from-gray-900 to-black rounded-lg overflow-hidden transition-all duration-700 hover:scale-105 block"
+      className="group relative block"
     >
-{imageUrl ? (
-  <img
-    src={imageUrl}
-    alt={product.name}
-    className="w-full h-80 object-cover transform transition-transform duration-700 group-hover:scale-110"
-    loading="lazy"
-  />
-) : (
-  <div className="w-full h-80 bg-white/5 flex items-center justify-center text-gray-500 text-sm">
-    No Image
-  </div>
-)}
-
-      <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-80" />
-
-      <div className="absolute bottom-0 left-0 right-0 p-6 text-center">
-        <h2 className="text-xl font-light mb-2 tracking-wider">
-          {product.name}
-        </h2>
-        {product.category && (
-          <p className="text-sm text-gray-300 mb-3 font-light tracking-widest">
-            {product.category}
-          </p>
+      <div className="relative overflow-hidden aspect-[3/4] mb-6 bg-gray-900 border border-white/5">
+        {imageUrl ? (
+            <img
+                src={imageUrl}
+                alt={product.name}
+                className="w-full h-full object-cover transform transition-transform duration-[1.5s] ease-out group-hover:scale-110"
+                loading="lazy"
+            />
+        ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-700">No Image</div>
         )}
-        <p className="text-xl font-serif">$ {product.price}</p>
+        
+        {/* Overlay on Hover */}
+        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        
+        {/* Quick Add Button / Action (Optional, simplistic for now) */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+             <span className="text-xs uppercase tracking-[0.2em] text-white border-b border-white pb-1">View Details</span>
+        </div>
+      </div>
+
+      <div className="text-center space-y-2">
+        <h3 className="text-lg font-light tracking-wide text-white group-hover:text-gray-300 transition-colors">
+          {product.name}
+        </h3>
+        {product.category && (
+            <p className="text-[10px] uppercase tracking-[0.25em] text-gray-500">
+                {product.category}
+            </p>
+        )}
+        <p className="text-base font-serif text-white/90">
+            ${product.price}
+        </p>
       </div>
     </Link>
   );
 });
-
-/* ===============================
-   Main Component (FIXED)
-================================ */
 
 export default function TopSellingProducts() {
   const [topProducts, setTopProducts] = useState([]);
@@ -97,16 +71,13 @@ export default function TopSellingProducts() {
       setLoading(true);
       try {
         const res = await Api.get("/products/top_selling/?limit=4");
-        // The endpoint returns the list of products directly
         const products = Array.isArray(res.data) ? res.data : [];
-        console.log("Top Selling Products Data:", products);
         setTopProducts(products);
       } catch (err) {
         console.error("Top products error:", err);
-        toast.error("Could not load top-selling items.");
         setTopProducts([]);
       } finally {
-        setLoading(false);
+        setTimeout(() => setLoading(false), 500); // Slight delay for smooth transition
       }
     };
 
@@ -114,26 +85,44 @@ export default function TopSellingProducts() {
   }, []);
 
   return (
-    <div className="py-20 px-6 max-w-7xl mx-auto">
-      <div className="text-center mb-16">
-        <h2 className="text-3xl md:text-4xl font-light mb-4 tracking-wider">
-          Top Selling
-        </h2>
-        <p className="text-lg text-gray-400 font-light">
-          Our most coveted scents
-        </p>
-        <div className="w-20 h-px bg-white/40 mx-auto mt-6" />
-      </div>
+    <section className="py-32 px-6 bg-black text-white relative overflow-hidden">
+      
+      {/* Background Decorative */}
+      <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-neutral-900/20 to-transparent pointer-events-none" />
 
-      {loading ? (
-        <TopSellingSkeletonLoader />
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-          {topProducts.map((product) => (
-            <TopProductCard key={product.id} product={product} />
-          ))}
+      <div className="max-w-7xl mx-auto relative z-10">
+        <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
+            <div className="max-w-xl">
+                <span className="text-xs font-bold tracking-[0.3em] uppercase text-gray-500 mb-4 block">Curated Collection</span>
+                <h2 className="text-4xl md:text-5xl font-serif font-light leading-tight">
+                    Most Coveted <span className="italic text-gray-500">Scents</span>
+                </h2>
+            </div>
+            <Link to="/products" className="hidden md:flex items-center gap-2 text-sm uppercase tracking-[0.2em] hover:text-gray-400 transition-colors group">
+                View All <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            </Link>
         </div>
-      )}
-    </div>
+
+        {loading ? (
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
+                {Array.from({ length: 4 }).map((_, i) => (
+                    <ProductCardSkeleton key={i} />
+                ))}
+             </div>
+        ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
+            {topProducts.map((product, index) => (
+                <TopProductCard key={product.id} product={product} index={index} />
+            ))}
+            </div>
+        )}
+
+        <div className="mt-16 md:hidden text-center">
+            <Link to="/products" className="inline-flex items-center gap-2 text-sm uppercase tracking-[0.2em] border-b border-white/30 pb-1">
+                View All Collection
+            </Link>
+        </div>
+      </div>
+    </section>
   );
 }
