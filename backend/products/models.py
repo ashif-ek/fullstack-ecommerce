@@ -91,7 +91,7 @@ class ProductReview(models.Model):
     title = models.CharField(max_length=255)
     comment = models.TextField()
     is_verified_purchase = models.BooleanField(default=False)
-    is_approved = models.BooleanField(default=False, db_index=True)
+    is_approved = models.BooleanField(default=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
 

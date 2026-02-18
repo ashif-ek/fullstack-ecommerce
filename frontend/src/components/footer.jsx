@@ -70,8 +70,8 @@ export default function Footer() {
               <li><Link to="/contact" className="text-sm hover:text-white transition-colors duration-300">Contact Us</Link></li>
               <li><Link to="/shipping-returns" className="text-sm hover:text-white transition-colors duration-300">Shipping & Returns</Link></li>
               <li><Link to="/faq" className="text-sm hover:text-white transition-colors duration-300">FAQ</Link></li>
-              <li><a href="#" className="text-sm hover:text-white transition-colors duration-300">Store Locator</a></li>
-              <li><a href="#" className="text-sm hover:text-white transition-colors duration-300">Care Guide</a></li>
+              <li><Link to="/store-locator" className="text-sm hover:text-white transition-colors duration-300">Store Locator</Link></li>
+              <li><Link to="/care-guide" className="text-sm hover:text-white transition-colors duration-300">Care Guide</Link></li>
             </ul>
           </div>
           
@@ -103,7 +103,7 @@ export default function Footer() {
           <div className="flex space-x-6 text-xs">
             <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
             <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
-            <a href="#" className="hover:text-white transition-colors">Accessibility</a>
+            <Link to="/accessibility" className="hover:text-white transition-colors">Accessibility</Link>
           </div>
         </div>
       </div>

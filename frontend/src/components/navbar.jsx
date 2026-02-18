@@ -64,30 +64,49 @@ export default function Navbar() {
 
           {query && filtered.length > 0 && (
             <div className="absolute mt-2 w-full bg-white text-black rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
-              {filtered.map((p) => (
+              {filtered.map((p) => {
+                // Image Extraction Logic
+                let imgUrl = "";
+                if (p.images && p.images.length > 0) {
+                    const firstImg = p.images[0];
+                    imgUrl = typeof firstImg === "string" ? firstImg : firstImg.image;
+                } else if (p.image) {
+                    imgUrl = p.image;
+                }
+
+                // Handle Relative URLs
+                if (imgUrl && imgUrl.startsWith("/")) {
+                    imgUrl = `${import.meta.env.VITE_API_URL}${imgUrl}`;
+                }
+
+                return (
                 <div
                   key={p.id}
                   onClick={() => {
                     navigate(`/products/${p.id}`);
                     setQuery("");
-                    setFiltered([]);
+                    // setFiltered([]); // This is not exposed in context, removing
                     closeMenu();
                   }}
                   className="flex items-center gap-3 px-3 py-2 hover:bg-gray-100 cursor-pointer"
                 >
-                  {p.images?.[0] && (
+                  {imgUrl ? (
                     <img
-                      src={p.images[0]}
+                      src={imgUrl}
                       alt={p.name}
                       className="w-8 h-8 object-cover rounded"
                     />
+                  ) : (
+                    <div className="w-8 h-8 bg-gray-200 rounded flex items-center justify-center text-[8px] text-gray-500">
+                        No Img
+                    </div>
                   )}
                   <div>
                     <p className="text-sm">{p.name}</p>
                     <p className="text-xs text-gray-500">${p.price}</p>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           )}
         </div>

@@ -23,6 +23,9 @@ const ShippingReturns = lazy(() => import("./modules/user/pages/ShippingReturns"
 const FAQ = lazy(() => import("./modules/user/pages/FAQ"));
 const PrivacyPolicy = lazy(() => import("./modules/user/pages/PrivacyPolicy"));
 const Terms = lazy(() => import("./modules/user/pages/Terms"));
+const CareGuide = lazy(() => import("./modules/user/pages/CareGuide"));
+const Accessibility = lazy(() => import("./modules/user/pages/Accessibility"));
+const StoreLocator = lazy(() => import("./modules/user/pages/StoreLocator"));
 
 // Admin Pages
 const AdminProducts = lazy(() => import("./modules/admin/admin-products"));
@@ -83,6 +86,9 @@ function AppWithProviders() {
                         <Route path="/faq" element={<FAQ />} />
                         <Route path="/privacy" element={<PrivacyPolicy />} />
                         <Route path="/terms" element={<Terms />} />
+                        <Route path="/care-guide" element={<CareGuide />} />
+                        <Route path="/accessibility" element={<Accessibility />} />
+                        <Route path="/store-locator" element={<StoreLocator />} />
                       </Route>
 
                       {/* Protected user routes */}

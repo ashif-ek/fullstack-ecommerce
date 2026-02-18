@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
 import Api from "../services/api";
 
+import HeroSkeleton from "./HeroSkeleton";
+
 // --- Define the luxury data ---
 const initialSlides = [
   {
@@ -55,13 +57,7 @@ const initialSlides = [
   },
 ];
 
-// --- Shimmer Loader ---
-const ShimmerLoader = () => (
-  <section className="relative h-screen h-[100dvh] w-full flex items-center justify-center overflow-hidden bg-black">
-    <div className="absolute inset-0 bg-neutral-900 animate-pulse" />
-    <div className="z-10 text-white/20 tracking-[1em] uppercase text-sm font-light">Loading Experience</div>
-  </section>
-);
+
 
 // --- Background Component (Ken Burns Effect) ---
 const SlideBackgrounds = React.memo(({ slides, currentSlide }) => (
@@ -258,7 +254,7 @@ export default function Hero() {
     setCurrentSlide(index);
   }, []);
 
-  if (isLoading) return <ShimmerLoader />;
+  if (isLoading) return <HeroSkeleton />;
   if (!slides.length) return null;
 
   return (
