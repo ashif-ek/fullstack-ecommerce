@@ -1,7 +1,7 @@
 import { useState } from "react";
-import Navbar from "../../components/navbar";
-import Footer from "../../components/footer";
-import Api from "../../services/api";
+import Navbar from "../../../components/navbar";
+import Footer from "../../../components/footer";
+import Api from "../../../services/api";
 import { toast } from "react-toastify";
 
 export default function Contact() {
