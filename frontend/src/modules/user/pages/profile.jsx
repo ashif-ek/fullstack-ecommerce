@@ -23,7 +23,6 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [editFormData, setEditFormData] = useState({
       username: user?.username || "",
-      username: user?.username || "",
       email: user?.email || "",
       profile_picture: null,
   });

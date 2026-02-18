@@ -35,7 +35,6 @@ export default function AdminProducts() {
     price: "",
     count: "",
     category: "",
-    category: "",
     image: null, // Main image file
     uploaded_images: [], // Additional gallery images
     isActive: true,
