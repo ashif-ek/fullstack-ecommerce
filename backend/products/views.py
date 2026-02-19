@@ -14,7 +14,15 @@ from .permissions import IsOwnerOrReadOnly
 from .serializers import AdminProductSerializer
 
 
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+
+
 class ProductViewSet(ModelViewSet):
+    @method_decorator(cache_page(60 * 5))
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
     queryset = (
         Product.objects.prefetch_related("images")
         .annotate(

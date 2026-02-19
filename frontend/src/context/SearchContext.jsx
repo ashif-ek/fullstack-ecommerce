@@ -54,16 +54,16 @@ export function SearchProvider({ children }) {
   // filtered is now just products, confusing naming but keeps API consistent
   const filtered = products;
 
+  const value = useMemo(() => ({
+    query,
+    setQuery,
+    filtered,
+    loading,
+    error,
+  }), [query, filtered, loading, error]);
+
   return (
-    <SearchContext.Provider
-      value={{
-        query,
-        setQuery,
-        filtered,
-        loading,
-        error,
-      }}
-    >
+    <SearchContext.Provider value={value}>
       {children}
     </SearchContext.Provider>
   );

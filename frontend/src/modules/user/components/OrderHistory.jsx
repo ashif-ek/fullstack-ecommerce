@@ -1,34 +1,26 @@
+import React, { useMemo } from "react";
 import InlineFeedback from "../../../components/InlineFeedback";
 
-export default function OrderHistory({ orders, handleClearOrders, handleCancelOrder, feedback, onFeedbackClose }) {
-  return (
-    <>
-      <div className="text-center mb-8 space-y-4">
-        {orders.length > 0 && (
-          <button
-            onClick={handleClearOrders}
-            className="border border-red-500/50 text-red-500 px-6 py-2 text-xs tracking-widest uppercase hover:bg-red-500/20 transition-colors"
-          >
-            Clear Order History
-          </button>
-        )}
-        
-        {/* Order Feedback */}
-        {feedback && (
-             <div className="max-w-md mx-auto">
-                 <InlineFeedback {...feedback} onClose={onFeedbackClose} />
-             </div>
-        )}
-      </div>
+// Helper for image URL logic
+const getProductImageUrl = (item) => {
+    if (!item.product_image) return "https://via.placeholder.com/64?text=No+Image";
+    
+    if (item.product_image.startsWith("http")) {
+        return item.product_image;
+    }
+    
+    // Removing /api from the end if present to get base URL
+    const baseUrl = import.meta.env.VITE_API_URL.endsWith('/api') 
+        ? import.meta.env.VITE_API_URL.slice(0, -4) 
+        : import.meta.env.VITE_API_URL;
+    
+    const path = item.product_image.startsWith("/") ? item.product_image : `/${item.product_image}`;
+    return `${baseUrl}${path}`;
+};
 
-      <div className="space-y-8">
-        {orders.length === 0 ? (
-          <div className="text-center text-gray-500 py-16 border border-white/10 rounded-lg">
-            <p>You have not placed any orders yet.</p>
-          </div>
-        ) : (
-          [...orders].reverse().map((order, index) => (
-            <div key={order.date || index} className="bg-gray-900/50 border border-white/10 rounded-lg overflow-hidden">
+const OrderCard = React.memo(({ order, handleCancelOrder }) => {
+    return (
+        <div className="bg-gray-900/50 border border-white/10 rounded-lg overflow-hidden">
               {/* Order Header */}
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 bg-gray-900">
                 <div>
@@ -87,30 +79,12 @@ export default function OrderHistory({ orders, handleClearOrders, handleCancelOr
               <div className="p-4 space-y-4">
                 {order.items && order.items.map((item) => (
                   <div key={item.id} className="flex items-center space-x-4">
-                    {(() => {
-                        let imgUrl = "https://via.placeholder.com/64?text=No+Image";
-                        if (item.product_image) {
-                            if (item.product_image.startsWith("http")) {
-                                imgUrl = item.product_image;
-                            } else {
-                                // removing /api from the end if present to get base URL
-                                const baseUrl = import.meta.env.VITE_API_URL.endsWith('/api') 
-                                    ? import.meta.env.VITE_API_URL.slice(0, -4) 
-                                    : import.meta.env.VITE_API_URL;
-                                // ensure leading slash
-                                const path = item.product_image.startsWith("/") ? item.product_image : `/${item.product_image}`;
-                                imgUrl = `${baseUrl}${path}`;
-                            }
-                        }
-                        return (
-                            <img
-                              src={imgUrl}
-                              alt={item.product_name || item.name}
-                              className="w-16 h-16 object-cover rounded-md"
-                              onError={(e) => { e.target.src = "https://via.placeholder.com/64?text=Error"; }} 
-                            />
-                        );
-                    })()}
+                    <img
+                        src={getProductImageUrl(item)}
+                        alt={item.product_name || item.name}
+                        className="w-16 h-16 object-cover rounded-md"
+                        onError={(e) => { e.target.src = "https://via.placeholder.com/64?text=Error"; }} 
+                    />
 
                     <div className="flex-grow">
                       <p className="font-semibold text-white">{item.product_name || item.name}</p>
@@ -137,6 +111,47 @@ export default function OrderHistory({ orders, handleClearOrders, handleCancelOr
                 </div>
               )}
             </div>
+    );
+});
+
+export default function OrderHistory({ orders, handleClearOrders, handleCancelOrder, feedback, onFeedbackClose }) {
+  // Memoize sorted orders to avoid reversing on every render
+  const sortedOrders = useMemo(() => {
+    return [...orders].reverse();
+  }, [orders]);
+
+  return (
+    <>
+      <div className="text-center mb-8 space-y-4">
+        {orders.length > 0 && (
+          <button
+            onClick={handleClearOrders}
+            className="border border-red-500/50 text-red-500 px-6 py-2 text-xs tracking-widest uppercase hover:bg-red-500/20 transition-colors"
+          >
+            Clear Order History
+          </button>
+        )}
+        
+        {/* Order Feedback */}
+        {feedback && (
+             <div className="max-w-md mx-auto">
+                 <InlineFeedback {...feedback} onClose={onFeedbackClose} />
+             </div>
+        )}
+      </div>
+
+      <div className="space-y-8">
+        {sortedOrders.length === 0 ? (
+          <div className="text-center text-gray-500 py-16 border border-white/10 rounded-lg">
+            <p>You have not placed any orders yet.</p>
+          </div>
+        ) : (
+          sortedOrders.map((order, index) => (
+            <OrderCard 
+                key={order.id || index} 
+                order={order} 
+                handleCancelOrder={handleCancelOrder} 
+            />
           ))
         )}
       </div>

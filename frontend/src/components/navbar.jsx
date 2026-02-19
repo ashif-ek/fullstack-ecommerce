@@ -59,6 +59,7 @@ export default function Navbar() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search..."
+            aria-label="Search products"
             className="w-full px-3 py-1.5 rounded-full bg-white/90 text-black text-sm placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-white/60 shadow-md"
           />
 
@@ -117,7 +118,7 @@ export default function Navbar() {
           {/* PROFILE */}
           <div className="hidden md:flex items-center space-x-3">
             {user && (
-              <Link to="/profile" className="hover:text-gray-300">
+              <Link to="/profile" className="hover:text-gray-300" aria-label="User Profile">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                     d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
@@ -141,7 +142,7 @@ export default function Navbar() {
           </div>
 
           {/* CART */}
-          <Link to="/carts" className="hover:text-gray-300 relative">
+          <Link to="/carts" className="hover:text-gray-300 relative" aria-label={`Cart with ${cartCount} items`}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                 d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"

@@ -1,3 +1,22 @@
 @import "tailwindcss";
 
+@layer base {
+    :root {
+        --color-primary: #000000;
+        --color-secondary: #ffffff;
+    }
 
+    body {
+        @apply bg-black text-white antialiased;
+    }
+
+    /* Improved Focus Styles for Accessibility */
+    :focus-visible {
+        @apply outline-2 outline-offset-2 outline-white;
+    }
+
+    /* High Contrast Selection */
+    ::selection {
+        @apply bg-white text-black;
+    }
+}

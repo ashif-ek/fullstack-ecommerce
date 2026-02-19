@@ -88,8 +88,9 @@ export default function Contact() {
             {/* Contact Form */}
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-xs uppercase tracking-wider text-gray-500 mb-1">Name</label>
+                <label htmlFor="name" className="block text-xs uppercase tracking-wider text-gray-500 mb-1">Name</label>
                 <input
+                  id="name"
                   type="text"
                   name="name"
                   value={formData.name}
@@ -99,8 +100,9 @@ export default function Contact() {
                 />
               </div>
               <div>
-                <label className="block text-xs uppercase tracking-wider text-gray-500 mb-1">Email</label>
+                <label htmlFor="email" className="block text-xs uppercase tracking-wider text-gray-500 mb-1">Email</label>
                 <input
+                  id="email"
                   type="email"
                   name="email"
                   value={formData.email}
@@ -110,8 +112,9 @@ export default function Contact() {
                 />
               </div>
               <div>
-                <label className="block text-xs uppercase tracking-wider text-gray-500 mb-1">Subject</label>
+                <label htmlFor="subject" className="block text-xs uppercase tracking-wider text-gray-500 mb-1">Subject</label>
                 <input
+                  id="subject"
                   type="text"
                   name="subject"
                   value={formData.subject}
@@ -121,8 +124,9 @@ export default function Contact() {
                 />
               </div>
               <div>
-                <label className="block text-xs uppercase tracking-wider text-gray-500 mb-1">Message</label>
+                <label htmlFor="message" className="block text-xs uppercase tracking-wider text-gray-500 mb-1">Message</label>
                 <textarea
+                  id="message"
                   name="message"
                   value={formData.message}
                   onChange={handleChange}

@@ -7,7 +7,7 @@ import Navbar from "../../../components/navbar";
 import Footer from "../../../components/footer";
 import { useAuth } from "../../../context/AuthContext";
 import { Link } from "react-router-dom";
-import InlineFeedback from "../../../components/InlineFeedback"; // Import InlineFeedback
+import ProductModal from "../components/ProductModal";
 
 // Constants for pagination
 const PRODUCTS_PER_PAGE = 9;
@@ -77,9 +77,6 @@ export default function Products() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Separate feedback states for Cart and Wishlist
-  const [cartFeedback, setCartFeedback] = useState({ type: "", message: "", isVisible: false });
-  const [wishlistFeedback, setWishlistFeedback] = useState({ type: "", message: "", isVisible: false });
   const [fetchError, setFetchError] = useState(null);
 
   const [page, setPage] = useState(1);
@@ -87,8 +84,8 @@ export default function Products() {
   const [hasMore, setHasMore] = useState(true);
 
   const { user } = useAuth();
-  const { cart, addToCart } = useCart();
-  const { wishlist, addToWishlist } = useWishlist();
+  const { addToCart } = useCart();
+  const { addToWishlist } = useWishlist();
 
   const fetchProducts = useCallback(async () => {
     if (!hasMore) return;
@@ -147,9 +144,6 @@ export default function Products() {
   const openProductModal = useCallback((product) => {
     setSelectedProduct(product);
     setIsModalOpen(true);
-    // Reset feedbacks when opening modal
-    setCartFeedback({ isVisible: false, message: "", type: "" });
-    setWishlistFeedback({ isVisible: false, message: "", type: "" });
     document.body.style.overflow = 'hidden';
   }, []);
 
@@ -164,47 +158,7 @@ export default function Products() {
     };
   }, []);
 
-  const handleAddToCart = useCallback(() => {
-    setCartFeedback({ isVisible: false, message: "", type: "" });
-    if (!user) {
-      setCartFeedback({ type: "error", message: "Please log in to add items", isVisible: true });
-      return;
-    }
-    try {
-        addToCart(selectedProduct.id, 1);
-        setCartFeedback({ type: "success", message: "Added to cart", isVisible: true, duration: 2000 });
-    } catch (err) {
-        setCartFeedback({ type: "error", message: "Failed to add", isVisible: true });
-    }
-  }, [user, selectedProduct, addToCart]);
-  
-  const handleAddToWishlist = useCallback(() => {
-    setWishlistFeedback({ isVisible: false, message: "", type: "" });
-    if (!user) {
-      setWishlistFeedback({ type: "error", message: "Please log in to wishlist", isVisible: true });
-      return;
-    }
-    const result = addToWishlist(selectedProduct);
-    if (result && result.message) {
-         // Check if it was "Added" or "Already in" based on message content or return type
-         // Assuming generic success for now. logic in wishlist context might vary.
-         // Context implementation: if (exists) toast.info else toast.success
-         // We should update context to return status.
-         // Assuming context returns object { success, message } from my previous edits? 
-         // Checked Context: yes, returns { success: true/false, message: "..." }
-         if (result.success) {
-             setWishlistFeedback({ type: "success", message: result.message, isVisible: true, duration: 2000 });
-         } else {
-             setWishlistFeedback({ type: "info", message: result.message, isVisible: true, duration: 2000 });
-         }
-    } else {
-         // Fallback if context wrapper didn't return
-         setWishlistFeedback({ type: "success", message: "Updated wishlist", isVisible: true });
-    }
-  }, [user, selectedProduct, addToWishlist]);
-  
-  const isAddedToCart = selectedProduct ? cart.some(item => item.id === selectedProduct.id) : false;
-  const isAddedToWishlist = selectedProduct ? wishlist.some(item => item.id === selectedProduct.id) : false;
+  // Handlers moved to ProductModal (ActionButtons) to avoid re-rendering list on feedback
 
   return (
     <>
@@ -255,83 +209,17 @@ export default function Products() {
         </div>
 
         {/* Product Modal */}
-        {isModalOpen && selectedProduct && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-            <div className="relative max-w-4xl w-full max-h-[90vh] overflow-auto bg-gradient-to-br from-gray-900 to-black border border-white/10 rounded-lg">
-              <button onClick={closeModal} className="absolute top-4 right-4 z-10 text-white/70 hover:text-white transition-colors">
-                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M6 18L18 6M6 6l12 12"></path></svg>
-              </button>
-              <div className="grid md:grid-cols-2 gap-8">
-                <div className="h-96 md:h-full">
-                  <img src={selectedProduct.image} alt={selectedProduct.name} className="w-full h-full object-cover" />
-                </div>
-                <div className="p-8">
-                  <h2 className="text-3xl font-light mb-2">{selectedProduct.name}</h2>
-                  <p className="text-sm text-gray-300 mb-6 uppercase tracking-widest">{selectedProduct.category}</p>
-                  <p className="text-xl font-serif mb-6">$ {selectedProduct.price}</p>
-                  <p className="text-gray-300 mb-8 leading-relaxed">{selectedProduct.description}</p>
-                  
-                  <div className="mb-8">
-                    <p className="text-sm text-gray-400 mb-2">Stock: {selectedProduct.count}</p>
-                    <div className="w-full bg-gray-700 h-2 rounded-full">
-                      <div className="bg-white h-2 rounded-full" style={{ width: `${Math.min(selectedProduct.count / 10 * 100, 100)}%` }}></div>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-4 mt-8">
-
-                    <div className="flex flex-col items-center space-y-2">
-                      {isAddedToCart ? (
-                        <Link
-                          to="/carts"
-                          className="w-full py-3 bg-white text-black text-sm tracking-widest uppercase hover:bg-gray-200 transition-colors duration-300 flex items-center justify-center font-medium"
-                        >
-                          Go to Cart
-                        </Link>
-                      ) : (
-                        <button
-                          onClick={handleAddToCart}
-                          disabled={selectedProduct.count <= 0}
-                          className="w-full py-3 bg-white text-black text-sm tracking-widest uppercase hover:bg-gray-200 transition-colors duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                        >
-                          {selectedProduct.count > 0 ? 'Add to Cart' : 'Save to Cart'}
-                        </button>
-                      )}
-                      <InlineFeedback 
-                        {...cartFeedback} 
-                        onClose={() => setCartFeedback(p => ({ ...p, isVisible: false }))} 
-                       />
-                    </div>
-
-                    <div className="flex flex-col items-center space-y-2">
-                      {isAddedToWishlist ? (
-                        <Link
-                          to="/whishlist"
-                          className="w-full py-3 border border-white/30 text-sm tracking-widest uppercase hover:bg-white/10 transition-colors duration-300 flex items-center justify-center font-medium"
-                        >
-                          Go to Wishlist
-                        </Link>
-                      ) : (
-                        <button
-                          onClick={handleAddToWishlist}
-                          className="w-full py-3 border border-white/30 text-sm tracking-widest uppercase hover:bg-white/10 transition-colors duration-300"
-                        >
-                          Save to Wishlist
-                        </button>
-                      )}
-                       <InlineFeedback 
-                        {...wishlistFeedback} 
-                        onClose={() => setWishlistFeedback(p => ({ ...p, isVisible: false }))} 
-                       />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        <ProductModal 
+            isOpen={isModalOpen}
+            product={selectedProduct}
+            onClose={closeModal}
+            user={user}
+            addToCart={addToCart}
+            addToWishlist={addToWishlist}
+        />
       </div>
       <Footer />
     </>
   );
 }
+
