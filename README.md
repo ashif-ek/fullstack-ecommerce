@@ -8,7 +8,7 @@ This project follows real-world SaaS engineering practices including cloud stora
 
 ---
 
-![Noirel Banner](frontend/public/perfume1.png)
+![Noirel Banner](frontend/public/perfume1.webp)
 
 ---
 
