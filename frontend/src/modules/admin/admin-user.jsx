@@ -1,15 +1,17 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import Api from "../../services/api";
 import { FiUser, FiMail, FiCalendar, FiSearch, FiFilter, FiEye, FiPlus, FiLoader } from "react-icons/fi";
 import InlineFeedback from "../../components/InlineFeedback";
+import { debounce } from "lodash";
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [localSearch, setLocalSearch] = useState(""); // Local state for immediate input
   const [statusFilter, setStatusFilter] = useState("all");
   const [roleFilter, setRoleFilter] = useState("all");
   const [feedback, setFeedback] = useState({ type: "", message: "", isVisible: false }); // Feedback state
@@ -31,6 +33,20 @@ export default function AdminUsers() {
     };
     fetchUsers();
   }, []);
+
+  // Debounced search handler
+  const debouncedSearch = useCallback(
+    debounce((value) => {
+      setSearchTerm(value);
+    }, 300),
+    []
+  );
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setLocalSearch(value);
+    debouncedSearch(value);
+  };
 
   useEffect(() => {
     let result = users;
@@ -83,8 +99,8 @@ export default function AdminUsers() {
             <input
               type="text"
               placeholder="Search users..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={localSearch}
+              onChange={handleSearchChange}
               className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>

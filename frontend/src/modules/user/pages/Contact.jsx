@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Navbar from "../../../components/navbar";
 import Footer from "../../../components/footer";
 import Api from "../../../services/api";
-import InlineFeedback from "../../../components/InlineFeedback"; // Import InlineFeedback
+import InlineFeedback from "../../../components/InlineFeedback";
+import { throttle } from "lodash";
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -18,21 +19,40 @@ export default function Contact() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setFeedback({ isVisible: false, message: "", type: "" });
+  // Throttled submission handler to prevent rapid clicks
+  const throttledSubmit = useCallback(
+    throttle(async (data) => {
+      setLoading(true);
+      setFeedback({ isVisible: false, message: "", type: "" });
+      try {
+        const response = await fetch("https://formspree.io/f/xjgeebja", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify(data)
+        });
 
-    try {
-      await Api.post("/communication/contact/", formData);
-      setFeedback({ type: "success", message: "Message sent successfully!", isVisible: true, duration: 3000 });
-      setFormData({ name: "", email: "", subject: "", message: "" });
-    } catch (err) {
-      console.error("Error sending message:", err);
-      setFeedback({ type: "error", message: "Failed to send message.", isVisible: true });
-    } finally {
-      setLoading(false);
-    }
+        if (response.ok) {
+          setFeedback({ type: "success", message: "Message sent successfully!", isVisible: true, duration: 3000 });
+          setFormData({ name: "", email: "", subject: "", message: "" });
+        } else {
+          setFeedback({ type: "error", message: "Failed to send message.", isVisible: true });
+        }
+      } catch (err) {
+        console.error("Error sending message:", err);
+        setFeedback({ type: "error", message: "Failed to send message.", isVisible: true });
+      } finally {
+        setLoading(false);
+      }
+    }, 2000, { trailing: false }),
+    []
+  );
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    throttledSubmit(formData);
   };
 
   return (

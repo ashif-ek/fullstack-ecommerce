@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Api from "../../services/api"; // Assuming your API setup is correct
 import { 
   FiEdit, 
@@ -12,6 +12,7 @@ import {
   FiX
 } from "react-icons/fi";
 import InlineFeedback from "../../components/InlineFeedback";
+import { debounce } from "lodash";
 
 // A simple, reusable component for form fields to reduce repetition
 const FormInput = ({ label, value, onChange, ...props }) => (
@@ -41,12 +42,27 @@ export default function AdminProducts() {
   });
   const [editingProduct, setEditingProduct] = useState(null);
   const [filters, setFilters] = useState({ search: "", category: "all", status: "all" });
+  const [localSearch, setLocalSearch] = useState(""); // Local state for immediate input
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   
   // Feedback states
   const [feedback, setFeedback] = useState({ type: "", message: "", isVisible: false });
   const [modalFeedback, setModalFeedback] = useState({ type: "", message: "", isVisible: false });
+
+  // Debounced search handler
+  const debouncedSearch = useCallback(
+    debounce((value) => {
+      setFilters(prev => ({ ...prev, search: value }));
+    }, 300),
+    []
+  );
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setLocalSearch(value);
+    debouncedSearch(value);
+  };
 
   // --- Core Logic (Fetching, Filtering, CRUD) ---
   // This logic is mostly the same, as it was already well-structured.
@@ -268,8 +284,8 @@ export default function AdminProducts() {
           <input
             type="text"
             placeholder="Search by name, category, or description..."
-            value={filters.search}
-            onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+            value={localSearch}
+            onChange={handleSearchChange}
             className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 transition"
           />
         </div>
