@@ -2,13 +2,15 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
-import { useSearch } from "../context/SearchContext";
+// import { useSearch } from "../context/SearchContext";
+import DesktopSearchBar from "./DesktopSearchBar";
 import Api from "../services/api";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const { cart } = useCart();
-  const { query, setQuery, filtered } = useSearch();
+  // Removed useSearch hook as it's now used in DesktopSearchBar
+  // const { query, setQuery, filtered } = useSearch(); 
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -53,64 +55,7 @@ export default function Navbar() {
         </div>
 
         {/* DESKTOP SEARCH */}
-        <div className="relative hidden md:block w-56">
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search..."
-            aria-label="Search products"
-            className="w-full px-3 py-1.5 rounded-full bg-white/90 text-black text-sm placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-white/60 shadow-md"
-          />
-
-          {query && filtered.length > 0 && (
-            <div className="absolute mt-2 w-full bg-white text-black rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
-              {filtered.map((p) => {
-                // Image Extraction Logic
-                let imgUrl = "";
-                if (p.images && p.images.length > 0) {
-                    const firstImg = p.images[0];
-                    imgUrl = typeof firstImg === "string" ? firstImg : firstImg.image;
-                } else if (p.image) {
-                    imgUrl = p.image;
-                }
-
-                // Handle Relative URLs
-                if (imgUrl && imgUrl.startsWith("/")) {
-                    imgUrl = `${import.meta.env.VITE_API_URL}${imgUrl}`;
-                }
-
-                return (
-                <div
-                  key={p.id}
-                  onClick={() => {
-                    navigate(`/products/${p.id}`);
-                    setQuery("");
-                    // setFiltered([]); // This is not exposed in context, removing
-                    closeMenu();
-                  }}
-                  className="flex items-center gap-3 px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                >
-                  {imgUrl ? (
-                    <img
-                      src={imgUrl}
-                      alt={p.name}
-                      className="w-8 h-8 object-cover rounded"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 bg-gray-200 rounded flex items-center justify-center text-[8px] text-gray-500">
-                        No Img
-                    </div>
-                  )}
-                  <div>
-                    <p className="text-sm">{p.name}</p>
-                    <p className="text-xs text-gray-500">${p.price}</p>
-                  </div>
-                </div>
-              )})}
-            </div>
-          )}
-        </div>
+        <DesktopSearchBar closeMenu={closeMenu} />
 
         {/* RIGHT ICONS */}
         <div className="flex items-center space-x-4 md:space-x-5">

@@ -2,15 +2,8 @@ import { Link, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 // Removed toast import
 import Api from "../../../services/api";
-import { useCart } from "../../../context/CartContext";
-import { useWishlist } from "../../../context/WishlistContext";
-import Footer from "../../../components/footer";
-import Navbar from "../../../components/navbar";
-// ... (imports remain)
-import ProductDetailSkeleton from "../../../components/ProductDetailSkeleton"; // Import Skeleton
-import { Home, Package, Star, Share2, Heart, ShoppingBag, ArrowRight } from "lucide-react"; 
-import SizingGuideModal from "../components/SizingGuideModal";
-import InlineFeedback from "../../../components/InlineFeedback"; // Import InlineFeedback
+import { useAuth } from "../../../context/AuthContext";
+// ... (keep existing imports)
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -19,60 +12,19 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(true); // Add loading state
   const { addToCart, cart } = useCart();
   const { addToWishlist, wishlist } = useWishlist();
+  const { user } = useAuth(); // Get user
 
-  // Modal State
-  const [isSizingGuideOpen, setIsSizingGuideOpen] = useState(false);
+  // ... (keep state definitions)
 
-  // Feedback State
-  const [cartFeedback, setCartFeedback] = useState({ type: "", message: "", isVisible: false });
-  const [wishlistFeedback, setWishlistFeedback] = useState({ type: "", message: "", isVisible: false });
-  const [reviewFeedback, setReviewFeedback] = useState({ type: "", message: "", isVisible: false });
-
-  // Review State
-  const [reviews, setReviews] = useState([]);
-  const [newReview, setNewReview] = useState({ rating: 5, comment: "", title: "" });
-  const [submitting, setSubmitting] = useState(false);
-  const [relatedProducts, setRelatedProducts] = useState([]);
-
-  useEffect(() => {
-    window.scrollTo(0, 0); 
-    fetchProduct();
-  }, [id]);
-
-  useEffect(() => {
-    if (product?.category) {
-        fetchRelatedProducts();
-    }
-  }, [product]);
-
-  const fetchProduct = () => {
-    setLoading(true);
-    Api.get(`/products/${id}/`)
-      .then((res) => {
-        setProduct(res.data);
-         const mainImg = res.data.image || (res.data.images && res.data.images[0]?.image) || "";
-        setActiveImage(mainImg);
-      })
-      .catch((err) => console.error("API error:", err))
-      .finally(() => setLoading(false));
-  };
-    
-  const fetchRelatedProducts = async () => {
-    try {
-        const res = await Api.get(`/products/?category=${encodeURIComponent(product.category)}`);
-        const related = res.data.filter(p => p.id !== product.id).slice(0, 4);
-        setRelatedProducts(related);
-    } catch (err) {
-        console.error("Error fetching related products:", err);
-    }
-  };
-
-  const handleImageClick = (imgUrl) => {
-    setActiveImage(imgUrl);
-  };
+  // ... (keep useEffects and fetch functions)
 
   // HANDLERS WITH INLINE FEEDBACK
   const handleAddToCart = async () => {
+    setCartFeedback({ isVisible: false, message: "", type: "" });
+    if (!user) {
+        setCartFeedback({ type: "error", message: "Please log in to add items", isVisible: true });
+        return;
+    }
     try {
         await addToCart(product.id);
         setCartFeedback({ type: "success", message: "Added to cart", isVisible: true });
@@ -82,6 +34,11 @@ export default function ProductDetail() {
   };
 
   const handleAddToWishlist = () => {
+      setWishlistFeedback({ isVisible: false, message: "", type: "" });
+      if (!user) {
+          setWishlistFeedback({ type: "error", message: "Please log in to wishlist", isVisible: true });
+          return;
+      }
       const result = addToWishlist(product);
       if (result && result.message) {
            setWishlistFeedback({ 

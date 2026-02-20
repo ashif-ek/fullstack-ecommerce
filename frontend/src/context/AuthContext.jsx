@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useMemo, useCallback } from "react";
 import Api, { clearAccessToken } from "../services/api";
 
 const AuthContext = createContext(null);
@@ -32,25 +32,30 @@ export function AuthProvider({ children }) {
     init();
   }, []);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await Api.post("/auth/logout/");
     } finally {
       clearAccessToken();
       setUser(null);
     }
-  };
+  }, []); // Standard stable function
+
+  /* 
+     Optimization: 
+     Memoizing the value object prevents all consumers (Navbar, Routes) 
+     from re-rendering when 'user' hasn't changed.
+  */
+  const value = useMemo(() => ({
+    user,
+    setUser,
+    logout,
+    loading,
+    isAuthenticated: Boolean(user),
+  }), [user, loading, logout]);
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        setUser,
-        logout,
-        loading,
-        isAuthenticated: Boolean(user),
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
