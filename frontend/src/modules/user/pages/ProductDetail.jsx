@@ -1,9 +1,15 @@
 import { Link, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-// Removed toast import
+import { Star, ShoppingBag, Heart, ArrowRight } from "lucide-react";
 import Api from "../../../services/api";
 import { useAuth } from "../../../context/AuthContext";
-// ... (keep existing imports)
+import { useCart } from "../../../context/CartContext";
+import { useWishlist } from "../../../context/WishlistContext";
+import Navbar from "../../../components/navbar";
+import Footer from "../../../components/footer";
+import InlineFeedback from "../../../components/InlineFeedback";
+import ProductDetailSkeleton from "../../../components/ProductDetailSkeleton";
+import SizingGuideModal from "../components/SizingGuideModal";
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -14,9 +20,47 @@ export default function ProductDetail() {
   const { addToWishlist, wishlist } = useWishlist();
   const { user } = useAuth(); // Get user
 
-  // ... (keep state definitions)
+  const [relatedProducts, setRelatedProducts] = useState([]);
+  const [cartFeedback, setCartFeedback] = useState({ isVisible: false, message: "", type: "" });
+  const [wishlistFeedback, setWishlistFeedback] = useState({ isVisible: false, message: "", type: "" });
+  const [reviewFeedback, setReviewFeedback] = useState({ isVisible: false, message: "", type: "" });
+  const [newReview, setNewReview] = useState({ rating: 5, comment: "", title: "" });
+  const [submitting, setSubmitting] = useState(false);
+  const [isSizingGuideOpen, setIsSizingGuideOpen] = useState(false);
 
-  // ... (keep useEffects and fetch functions)
+  const handleImageClick = (imgSrc) => {
+    setActiveImage(imgSrc);
+  };
+
+  const fetchProduct = async () => {
+    try {
+      setLoading(true);
+      const res = await Api.get(`/products/${id}/`);
+      setProduct(res.data);
+      const mainImg = res.data.images?.[0]?.image || res.data.image;
+      setActiveImage(mainImg);
+    } catch (err) {
+      console.error("Failed to fetch product:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProduct();
+  }, [id]);
+
+  useEffect(() => {
+    if (!product?.category) return;
+    Api.get(`/products/?category=${encodeURIComponent(product.category)}`)
+      .then((res) => {
+        const others = (res.data.results || res.data || []).filter(
+          (p) => p.id !== product.id
+        );
+        setRelatedProducts(others.slice(0, 4));
+      })
+      .catch((err) => console.error("Related products error:", err));
+  }, [product]);
 
   // HANDLERS WITH INLINE FEEDBACK
   const handleAddToCart = async () => {
@@ -281,7 +325,6 @@ export default function ProductDetail() {
                              <span className="hover:text-gray-400 transition-colors cursor-pointer" onClick={() => setIsSizingGuideOpen(true)}>Sizing Guide</span>
                              <span className="hover:text-gray-400 transition-colors cursor-pointer" onClick={() => {
                                  navigator.clipboard.writeText(window.location.href);
-                                 toast.success("Link copied!");
                              }}>Share</span>
                         </div>
 
