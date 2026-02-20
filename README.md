@@ -15,7 +15,7 @@ This project follows real-world SaaS engineering practices including cloud stora
 ## 🌍 Live Deployment
 
 - **Frontend (Vercel):** https://noirel-perfume.vercel.app  
-- **Backend API (AWS EC2 + Nginx):** https://noirel.duckdns.org/api  
+- **Backend API (AWS EC2 + Nginx):** https://noirel.duckdns.org/api/health/  
 - **Swagger Docs:** https://noirel.duckdns.org/api/schema/swagger-ui/
 
 ---
