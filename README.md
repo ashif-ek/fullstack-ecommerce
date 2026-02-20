@@ -1,10 +1,20 @@
-# NOIRÉL | Premium Full-Stack E-Commerce Platform
+# NOIRÉL | Production-Grade Headless Full-Stack E-Commerce Platform
 
-**NOIRÉL** is a production-grade luxury e-commerce platform engineered with a modern full-stack architecture.
+![React](https://img.shields.io/badge/React-19-blue)
+![Django](https://img.shields.io/badge/Django-5-green)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Production-blue)
+![AWS](https://img.shields.io/badge/AWS-EC2%20%7C%20S3-orange)
+![Deployment](https://img.shields.io/badge/Status-Live-brightgreen)
 
-It combines a scalable **Django REST API backend** with a high-performance **React frontend**, delivering a seamless, secure, and premium online shopping experience.
+---
 
-This project follows real-world SaaS engineering practices including cloud storage, JWT authentication, payment integration, and deployment-ready infrastructure.
+## Overview
+
+**NOIRÉL** is a production-grade, headless full-stack e-commerce platform engineered using React 19 and Django REST Framework.
+
+The system replicates real-world SaaS architecture with a decoupled frontend and backend deployed on cloud infrastructure. It emphasizes transactional integrity, security hardening, performance optimization, and production-ready deployment practices.
+
+This project was built to move beyond CRUD-level applications and demonstrate end-to-end system engineering.
 
 ---
 
@@ -14,143 +24,386 @@ This project follows real-world SaaS engineering practices including cloud stora
 
 ## 🌍 Live Deployment
 
-- **Frontend (Vercel):** https://noirel-perfume.vercel.app  
-- **Backend API (AWS EC2 + Nginx):** https://noirel.duckdns.org/api/health/  
-- **Swagger Docs:** https://noirel.duckdns.org/api/schema/swagger-ui/
+- **Live Application (Vercel CDN):**  
+  https://noirel-perfume.vercel.app
+
+- **Backend API (AWS EC2 + Nginx):**  
+  https://noirel.duckdns.org/api/health/
+
+- **Swagger / OpenAPI Documentation:**  
+  https://noirel.duckdns.org/api/schema/swagger-ui/
 
 ---
 
-## 🚀 Key Features
+# 🏗 System Architecture
 
-### 🎨 Frontend (User Experience)
+NOIRÉL follows a headless, API-first architecture with strict separation between presentation and business logic layers.
 
-- **Premium UI/UX**
-  - Luxury minimalist design system
-  - Fully responsive layouts using TailwindCSS
-  - Smooth transitions and micro-interactions
+Client (React - Vercel CDN)
+↓ HTTPS
+Nginx Reverse Proxy (AWS EC2)
+↓
+Gunicorn (WSGI App Server)
+↓
+Django REST API
+↓
+PostgreSQL (RDS-ready)
+↓
+AWS S3 (Media Storage)
 
-- **Performance Optimizations**
-  - **Lazy Loading + Code Splitting** for faster startup
-  - **Optimistic UI Updates** for Cart & Wishlist actions
-  - Local caching for exchange-rate conversion (USD/INR)
 
-- **Robust State Architecture**
-  - Context API + `useReducer` for scalable global state
-  - Predictable state transitions (Cart, Orders, Wishlist)
+### Architectural Principles
 
-- **Authentication**
-  - Secure JWT login/register flows
-  - Persistent session management
-
-- **Checkout & Payments**
-  - Integrated **Razorpay Payment Gateway**
-  - Dual currency support (INR / USD)
-
-- **Resilience**
-  - Global Error Boundaries preventing white-screen crashes
-  - Graceful fallback UI for runtime failures
+- Decoupled frontend and backend
+- Stateless JWT-based authentication
+- Atomic transactions for data consistency
+- Infrastructure separation via reverse proxy
+- Cloud-native media storage
+- Production-first configuration
 
 ---
 
-### ⚙️ Backend (API & Infrastructure)
+# 🚀 Core Features
 
-- **RESTful API Layer**
-  - Built using Django REST Framework (DRF)
-  - Clean separation of concerns via modular apps
+## Frontend (React 19 + Vite)
 
-- **Database**
-  - PostgreSQL (AWS RDS-ready)
-  - Optimized schema relationships + indexing
+### Design System
 
-- **Cloud Storage**
-  - AWS S3 integration for scalable media/static hosting
-  - Secure presigned upload-ready architecture
+- Tailwind utility-first architecture
+- Reusable component abstraction
+- Responsive layout (mobile-first)
+- Component isolation to reduce unnecessary re-renders
 
-- **Security Hardening**
-  - JWT Authentication (`rest_framework_simplejwt`)
-  - CORS + CSRF protection
-  - Secure password hashing and validation
+### Performance Engineering
 
-- **API Documentation**
-  - Swagger/OpenAPI auto-generated via `drf-spectacular`
+- Route-based code splitting (`React.lazy`)
+- Optimistic UI updates for Cart & Wishlist
+- WebP image optimization
+- Memoized context values
+- Local caching for currency conversion (USD / INR)
 
-- **Admin Operations**
-  - Enhanced Django Admin dashboard for product/order/user control
+### State Management
+
+- Context API + `useReducer`
+- Predictable state transitions
+- Separated domains (Auth, Cart, Wishlist, Search)
+
+### Resilience
+
+- Global Error Boundaries
+- Graceful fallback UI
+- Persistent authentication sessions
 
 ---
 
-## 🛠️ Technology Stack
+## Backend (Django 5 + DRF)
+
+### API Layer
+
+- Modular Django apps (accounts, products, orders)
+- RESTful API via Django REST Framework
+- Clean separation of concerns
+
+### Authentication
+
+- JWT authentication (`SimpleJWT`)
+- Stateless validation
+- Role-based access control
+
+### Orders & Transactions
+
+- Atomic order creation using `transaction.atomic()`
+- Stock validation before commit
+- Snapshot pricing stored in OrderItems
+- Server-side Razorpay signature verification
+
+### Database
+
+- PostgreSQL schema optimized for relational integrity
+- Indexed fields for high-frequency queries
+- Foreign key indexing
+- Query-aligned schema design
+
+### Media & Storage
+
+- AWS S3 for production media storage
+- Local storage fallback in development
+- Scalable static/media separation
+
+---
+
+# 🔒 Transactional Integrity & Concurrency Handling
+
+- Order creation wrapped in atomic database transactions
+- Prevents race conditions during concurrent checkouts
+- Payment verification completed server-side
+- Ensures data consistency across order lifecycle
+- Protects against partial state updates
+
+---
+
+# 🛡 Security Considerations
+
+- JWT authentication with refresh rotation ready
+- Strict CORS configuration (production origin restricted)
+- Server-side payment signature verification
+- CSRF-safe configuration
+- DEBUG=False in production
+- Environment-based secret management
+- Secure password hashing (Django PBKDF2)
+
+---
+
+# ⚡ Performance Strategy
+
+### Frontend
+
+- Code splitting for reduced initial bundle size
+- Memoization to prevent unnecessary renders
+- Optimistic UI for perceived responsiveness
 
 ### Backend
 
-| Component        | Technology |
-|------------------|------------|
-| Framework        | Django 4.x |
-| API Layer        | Django REST Framework |
-| Authentication   | Simple JWT |
-| Database         | PostgreSQL |
-| Storage          | AWS S3 (`django-storages`, `boto3`) |
-| Payments         | Razorpay |
-| API Docs         | drf-spectacular |
-| Deployment       | Gunicorn + Nginx |
-| Utilities        | python-decouple, pillow, corsheaders |
+- Indexed database fields (`created_at`, foreign keys, flags)
+- Optimized relational queries
+- Transactional integrity enforcement
+- Reverse proxy buffering via Nginx
 
 ---
 
-### Frontend
+# ☁️ Production Deployment
+
+### Infrastructure Stack
+
+- **Frontend:** Vercel (Edge CDN)
+- **Backend:** AWS EC2 (Ubuntu)
+- **Reverse Proxy:** Nginx
+- **Application Server:** Gunicorn
+- **Database:** PostgreSQL (RDS-ready)
+- **Storage:** AWS S3
+- **CI/CD:** GitHub Actions
+
+### Production Hardening
+
+- HTTPS-enabled deployment
+- Static/media offloaded from application server
+- Restricted CORS origins
+- Gunicorn worker tuning
+- Environment-specific configuration management
+
+---
+
+# 🛠 Technology Stack
+
+## Backend
+
+| Component        | Technology |
+|------------------|------------|
+| Framework        | Django 5 |
+| API              | Django REST Framework |
+| Authentication   | Simple JWT |
+| Database         | PostgreSQL |
+| Storage          | AWS S3 |
+| Payments         | Razorpay |
+| API Docs         | drf-spectacular |
+| Server           | Gunicorn + Nginx |
+
+---
+
+## Frontend
 
 | Component        | Technology |
 |------------------|------------|
 | Library          | React 19 |
-| Build Tool       | Vite |
-| Styling          | TailwindCSS |
+| Build Tool       | Vite 6 |
+| Styling          | Tailwind CSS |
 | State Mgmt       | Context API + useReducer |
-| Routing          | React Router DOM v7 |
+| Routing          | React Router v7 |
 | HTTP Client      | Axios |
-| Date Utilities   | Day.js |
-| Icons            | Lucide React, React Icons |
+| Charts           | Recharts |
+| Animation        | Framer Motion |
 
 ---
 
-## 📂 Project Structure
+# 📂 Project Structure
+
+└── ashif-ek-fullstack-ecommerce/
+    
+    ├── backend/
+    │   ├── check_images.py
+    │   ├── manage.py
+    │   ├── output.txt
+    │   ├── package.json
+    │   ├── repro_profile_error.py
+    │   ├── requirements.txt
+    │   ├── verify_profile_view.py
+    │   ├── accounts/
+    │   │   ├── __init__.py
+    │   │   ├── admin.py
+    │   │   ├── apps.py
+    │   │   ├── models.py
+    │   │   ├── serializers.py
+    │   │   ├── tests.py
+    │   │   ├── urls.py
+    │   │   ├── views.py
+    │   │   └── migrations/
+    │   │       ├── 0001_initial.py
+    │   │       └── __init__.py
+    │   ├── cart/
+    │   │   ├── __init__.py
+    │   │   ├── admin.py
+    │   │   ├── apps.py
+    │   │   ├── models.py
+    │   │   ├── serializers.py
+    │   │   ├── signals.py
+    │   │   ├── tests.py
+    │   │   ├── urls.py
+    │   │   ├── views.py
+    │   │   └── migrations/
+    │   │       ├── 0001_initial.py
+    │   │       └── __init__.py
+    │   ├── config/
+    │   │   ├── __init__.py
+    │   │   ├── asgi.py
+    │   │   ├── settings.py
+    │   │   ├── urls.py
+    │   │   └── wsgi.py
+    │   ├── media/
+    │   │   └── products/
+    │   │       ├── shopping.webp
+    │   │       ├── shopping_1.webp
+    │   │       ├── shopping_2.webp
+    │   │       ├── shopping_3.webp
+    │   │       ├── shopping_4.webp
+    │   │       ├── shopping_4_ioFwxix.webp
+    │   │       ├── shopping_4_RL4VTog.webp
+    │   │       ├── shopping_6.webp
+    │   │       ├── shopping_jvCJI6b.webp
+    │   │       └── shopping_vghBe1D.webp
+    │   ├── orders/
+    │   │   ├── __init__.py
+    │   │   ├── admin.py
+    │   │   ├── apps.py
+    │   │   ├── models.py
+    │   │   ├── serializers.py
+    │   │   ├── services.py
+    │   │   ├── tests.py
+    │   │   ├── urls.py
+    │   │   ├── views.py
+    │   │   └── migrations/
+    │   │       ├── 0001_initial.py
+    │   │       ├── 0002_order_shipping_address.py
+    │   │       ├── 0003_alter_order_status.py
+    │   │       └── __init__.py
+    │   ├── payments/
+    │   │   ├── __init__.py
+    │   │   ├── admin.py
+    │   │   ├── apps.py
+    │   │   ├── models.py
+    │   │   ├── services.py
+    │   │   ├── tests.py
+    │   │   ├── urls.py
+    │   │   ├── views.py
+    │   │   └── migrations/
+    │   │       ├── 0001_initial.py
+    │   │       └── __init__.py
+    │   └── products/
+    │       ├── __init__.py
+    │       ├── admin.py
+    │       ├── apps.py
+    │       ├── models.py
+    │       ├── serializers.py
+    │       ├── tests.py
+    │       ├── urls.py
+    │       ├── views.py
+    │       └── migrations/
+    │           ├── 0001_initial.py
+    │           ├── 0002_alter_product_category.py
+    │           ├── 0003_product_image.py
+    │           └── __init__.py
+    └── frontend/
+        ├── README.md
+        ├── eslint.config.js
+        ├── index.html
+        ├── lint.txt
+        ├── lint_log.txt
+        ├── package.json
+        ├── postcss.config.js
+        ├── RELEASE_NOTES.md
+        ├── tailwind.config.js
+        ├── vercel.json
+        ├── vite.config.js
+        ├── public/
+        │   ├── robots.txt
+        │   ├── site.webmanifest
+        │   └── sitemap.xml
+        └── src/
+            ├── App.css
+            ├── App.jsx
+            ├── index.css
+            ├── main.jsx
+            ├── auth/
+            │   ├── login.jsx
+            │   └── register.jsx
+            ├── components/
+            │   ├── AdminRoute.jsx
+            │   ├── ErrorBoundary.jsx
+            │   ├── footer.jsx
+            │   ├── hero.jsx
+            │   ├── navbar.jsx
+            │   ├── ProtectedRoute.jsx
+            │   ├── PublicRoute.jsx
+            │   ├── SearchDropdown.jsx
+            │   └── ShimmerLoader.jsx
+            ├── context/
+            │   ├── AuthContext.jsx
+            │   ├── CartContext.jsx
+            │   ├── OrderContext.jsx
+            │   ├── SearchContext.jsx
+            │   └── WishlistContext.jsx
+            ├── modules/
+            │   ├── admin/
+            │   │   ├── admin-products.jsx
+            │   │   ├── admin-user.jsx
+            │   │   ├── adminLayout.jsx
+            │   │   ├── dashboard.jsx
+            │   │   ├── user-details.jsx
+            │   │   └── userOverview.jsx
+            │   └── user/
+            │       ├── userhome.jsx
+            │       └── pages/
+            │           ├── carts.jsx
+            │           ├── checkout.jsx
+            │           ├── home.jsx
+            │           ├── notfound.jsx
+            │           ├── orders.jsx
+            │           ├── ourStory.jsx
+            │           ├── ProductDetail.jsx
+            │           ├── products.jsx
+            │           ├── profile.jsx
+            │           ├── search.jsx
+            │           ├── TopSellingProducts.jsx
+            │           └── whishlist.jsx
+            └── services/
+                └── api.js
+
+
+---
+
+# ⚙️ Local Development Setup
+
+## Prerequisites
+
+- Python 3.10+
+- Node.js 18+
+- PostgreSQL (local or containerized)
+
+---
+
+## Backend Setup
 
 ```bash
-fullstack-ecommerce/
-│
-├── backend/
-│   ├── config/          # Settings, URLs, WSGI/ASGI
-│   ├── accounts/        # Auth + JWT flows
-│   ├── products/        # Product catalog system
-│   ├── orders/          # Cart + Checkout + Payments
-│   ├── media/           # Local dev uploads
-│   ├── manage.py
-│   └── requirements.txt
-│
-├── frontend/
-│   ├── src/
-│   │   ├── components/  # Shared UI components
-│   │   ├── pages/       # Route-level pages
-│   │   ├── context/     # Global state store
-│   │   ├── api/         # Axios API layer
-│   │   └── main.jsx
-│   └── package.json
-│
-└── README.md
-
-⚙️ Installation & Local Setup
-Prerequisites
-
-Python 3.10+
-
-Node.js 18+
-
-PostgreSQL installed locally or via Docker
-
-Backend Setup (Django)
-1. Navigate into backend
 cd backend
-
-2. Create and activate virtual environment
 python -m venv venv
 
 # Windows
@@ -159,85 +412,60 @@ venv\Scripts\activate
 # macOS/Linux
 source venv/bin/activate
 
-3. Install backend dependencies
 pip install -r requirements.txt
-
-4. Configure Environment Variables
-
-Create a .env file inside backend/
-
-SECRET_KEY=your_secret_key
-DEBUG=True
-
-ALLOWED_HOSTS=localhost,127.0.0.1
-
-DB_NAME=your_db_name
-DB_USER=your_db_user
-DB_PASSWORD=your_db_password
-DB_HOST=localhost
-DB_PORT=5432
-
-AWS_ACCESS_KEY_ID=your_aws_key
-AWS_SECRET_ACCESS_KEY=your_aws_secret
-AWS_STORAGE_BUCKET_NAME=your_bucket_name
-
-RAZORPAY_KEY_ID=your_key
-RAZORPAY_KEY_SECRET=your_secret
-
-5. Run migrations
 python manage.py migrate
-
-6. Collect static files
-python manage.py collectstatic
-
-7. Start backend server
 python manage.py runserver
 
-
-Backend runs at:
-
-http://127.0.0.1:8000/
-
-Frontend Setup (React)
-1. Navigate into frontend
+Frontend Setup
 cd frontend
-
-2. Install packages
 npm install
-
-3. Configure Frontend Environment Variables
-
-Create .env inside frontend/
-
-VITE_API_URL=http://127.0.0.1:8000
-
-4. Start frontend dev server
 npm run dev
 
-
 Frontend runs at:
-
 http://localhost:5173/
 
-☁️ Production Deployment Architecture
-React Frontend (Vercel)
-        ↓ HTTPS API Calls
-Nginx Reverse Proxy (AWS EC2)
-        ↓
-Gunicorn App Server (Django)
-        ↓
-PostgreSQL Database (AWS RDS)
-        ↓
-Media + Static Storage (AWS S3)
+Backend runs at:
+http://127.0.0.1:8000/
 
-🔥 Production Engineering Notes
+📈 Scalability Considerations
 
-DEBUG=False enforced in deployment
+Current design supports:
 
-Static assets served via Nginx + S3
+Stateless authentication (horizontal scaling ready)
 
-Media uploads handled via AWS S3 bucket
+Media offloading to S3
 
-CORS restricted to frontend domain only
+Indexed database queries
 
-JWT tokens secured with refresh rotation ready
+Reverse proxy architecture
+
+Future Enhancements:
+
+Redis caching layer
+
+Background job processing (Celery)
+
+Load balancer for horizontal scaling
+
+Containerization via Docker
+
+Observability & monitoring integration
+
+🎯 Engineering Focus
+
+This project demonstrates:
+
+API-first system design
+
+Cloud infrastructure deployment
+
+Transactional integrity enforcement
+
+Security boundary implementation
+
+Performance optimization
+
+Production hardening practices
+
+NOIRÉL reflects a transition from feature development to system-level engineering.
+
