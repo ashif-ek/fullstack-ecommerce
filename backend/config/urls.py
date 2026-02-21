@@ -3,7 +3,7 @@ from django.urls import path, include, re_path
 from django.views.generic import TemplateView
 from accounts.views import UserDetailView
 from django.conf import settings
-from .views import health_check
+from .views import health_check, api_root
 from django.conf.urls.static import static
 from drf_spectacular.views import (
     SpectacularAPIView,
@@ -13,6 +13,7 @@ from drf_spectacular.views import (
 
 
 urlpatterns = [
+    path("api/", api_root),
     path("api/health/", health_check),
     path("admin/", admin.site.urls),
     path("api/admin/", include("accounts.admin_urls")),

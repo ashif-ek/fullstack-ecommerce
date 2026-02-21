@@ -18,6 +18,9 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 
 
+from .filters import ProductFilter
+
+
 class ProductViewSet(ModelViewSet):
     @method_decorator(cache_page(60 * 5))
     def list(self, request, *args, **kwargs):
@@ -40,7 +43,7 @@ class ProductViewSet(ModelViewSet):
     ]
     search_fields = ["name", "description", "category__name"]
     ordering_fields = ["price", "created_at", "average_rating", "total_reviews"]
-    filterset_fields = ["category"]
+    filterset_class = ProductFilter
 
     def get_permissions(self):
         if self.request.method in ["POST", "PUT", "PATCH", "DELETE"]:
