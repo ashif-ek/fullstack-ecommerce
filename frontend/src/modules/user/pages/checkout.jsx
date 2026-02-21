@@ -103,11 +103,15 @@ export default function Checkout() {
       );
 
       /* 3️ OPEN RAZORPAY */
-      const handleSuccess = async () => {
+      const handleSuccess = async (response) => {
         try {
-           await Api.post('/payments/verify/', { order_id: order.id });
+           await Api.post('/payments/verify/', { 
+             order_id: order.id,
+             razorpay_payment_id: response.razorpay_payment_id,
+             razorpay_order_id: response.razorpay_order_id,
+             razorpay_signature: response.razorpay_signature,
+           });
            clearCart();
-           // Redirect is enough, but could show success briefly if redirection wasn't immediate
            navigate("/profile");
         } catch (err) {
            console.error(err);
@@ -213,8 +217,8 @@ function openRazorpay(data, onSuccess, onDismiss) {
     order_id: data.razorpay_order_id,
     name: "Noirél",
     description: "Luxury Perfumes",
-    handler: () => {
-      onSuccess();
+    handler: (response) => {
+      onSuccess(response);
     },
     modal: {
       ondismiss: () => {

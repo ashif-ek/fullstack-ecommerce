@@ -39,21 +39,52 @@ class RazorpayPaymentView(APIView):
 @permission_classes([IsAuthenticated])
 def verify_payment(request):
     """
-    Called after Razorpay success
+    Called after Razorpay success.
+    Verifies the cryptographic HMAC signature from Razorpay.
     """
-
     try:
-        # 1️ Mark order paid
-        order = get_object_or_404(Order, id=request.data["order_id"], user=request.user)
+        razorpay_order_id = request.data.get("razorpay_order_id")
+        razorpay_payment_id = request.data.get("razorpay_payment_id")
+        razorpay_signature = request.data.get("razorpay_signature")
+        order_id = request.data.get("order_id")
+
+        if not all(
+            [razorpay_order_id, razorpay_payment_id, razorpay_signature, order_id]
+        ):
+            return Response({"error": "Missing payment credentials"}, status=400)
+
+        # 1️ VERIFY SIGNATURE (Prevent replay attacks and authenticity verification)
+        params_dict = {
+            "razorpay_order_id": razorpay_order_id,
+            "razorpay_payment_id": razorpay_payment_id,
+            "razorpay_signature": razorpay_signature,
+        }
+
+        from .services import client as razorpay_client
+
+        try:
+            razorpay_client.utility.verify_payment_signature(params_dict)
+        except Exception:
+            return Response({"error": "Invalid signature verification"}, status=400)
+
+        # 2️ Find Order & Check Idempotency
+        order = get_object_or_404(Order, id=order_id, user=request.user)
+
+        if order.status == Order.STATUS_PAID:
+            return Response(
+                {"status": "already_paid", "message": "Order already processed"}
+            )
+
+        # 3️ Mark order paid
         order.status = Order.STATUS_PAID
         order.save()
 
-        # 2️ CLEAR CART (BACKEND-DRIVEN, CSRF-SAFE)
+        # 4️ CLEAR CART (BACKEND-DRIVEN)
         CartItem.objects.filter(cart__user=request.user).delete()
 
         return Response({"status": "success"})
-    except Exception as e:
+    except Exception:
         import traceback
 
         traceback.print_exc()
-        return Response({"error": str(e)}, status=500)
+        return Response({"error": "Payment verification failed"}, status=500)

@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "django_filters",
     "storages",
+    "rest_framework_simplejwt.token_blacklist",
     # Local Apps
     "accounts",
     "products",
@@ -165,8 +166,10 @@ REST_FRAMEWORK = {
 # JWT SETTINGS
 # ================================
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
@@ -224,7 +227,7 @@ AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 
 AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com"
 
-AWS_QUERYSTRING_AUTH = False
+AWS_QUERYSTRING_AUTH = True
 AWS_DEFAULT_ACL = None
 
 AWS_S3_OBJECT_PARAMETERS = {
