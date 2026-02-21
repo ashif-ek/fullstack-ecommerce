@@ -28,7 +28,7 @@ This project was built to move beyond CRUD-level applications and demonstrate en
   https://noirel-perfume.vercel.app
 
 - **Backend API (AWS EC2 + Nginx):**  
-  https://noirel.duckdns.org/api/health/
+  https://noirel.duckdns.org/api/
 
 - **Swagger / OpenAPI Documentation:**  
   https://noirel.duckdns.org/api/schema/swagger-ui/
@@ -468,4 +468,5 @@ Performance optimization
 Production hardening practices
 
 NOIRÉL reflects a transition from feature development to system-level engineering.
+
 
