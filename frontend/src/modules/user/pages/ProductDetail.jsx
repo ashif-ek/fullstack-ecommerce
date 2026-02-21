@@ -291,12 +291,13 @@ export default function ProductDetail() {
                                             </>
                                         )}
                                     </button>
-                                    <InlineFeedback 
-                                        {...cartFeedback} 
-                                        onClose={() => setCartFeedback(p => ({ ...p, isVisible: false }))} 
-                                    />
                                 </div>
                             )}
+
+                            <InlineFeedback 
+                                {...cartFeedback} 
+                                onClose={() => setCartFeedback(p => ({ ...p, isVisible: false }))} 
+                            />
 
                             <div>
                                 <button

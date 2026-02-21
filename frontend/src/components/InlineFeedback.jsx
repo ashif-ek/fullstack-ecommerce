@@ -44,13 +44,13 @@ const InlineFeedback = ({ type = "success", message, isVisible, onClose, autoClo
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -5 }}
         transition={{ duration: 0.2 }}
-        className={`flex items-center gap-3 p-3 mt-2 text-xs font-medium rounded-md border ${bg} ${border} ${color}`}
+        className={`flex items-center gap-3 p-4 mt-4 text-[10px] tracking-[0.1em] uppercase font-bold rounded-none border backdrop-blur-md shadow-2xl ${bg} ${border} ${color}`}
       >
-        <Icon size={16} className="shrink-0" />
+        <Icon size={14} className="shrink-0" />
         <span className="flex-1">{message}</span>
         {onClose && (
-            <button onClick={onClose} className="hover:opacity-70 transition-opacity">
-                <X size={14} />
+            <button onClick={onClose} className="hover:opacity-50 transition-opacity p-1">
+                <X size={12} />
             </button>
         )}
       </motion.div>
